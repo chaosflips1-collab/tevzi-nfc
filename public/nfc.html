@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>NFC Kart Okuma</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #007bff;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+    #log {
+      margin-top: 20px;
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: pre-line;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>NFC Kart Okuma Paneli</h1>
+  <p>Bu sayfayı <b>Android telefon</b> + <b>Chrome</b> ile açmalısın.</p>
+
+  <!-- GERÇEK NFC için buton -->
+  <button id="start">NFC Okumayı Başlat</button>
+
+  <!-- SADECE TEST İÇİN: NFC OLMADAN KART OKUTMA SİMÜLASYONU -->
+  <button id="testAhmet">Test: Ahmet kart okuttu</button>
+  <button id="testZeki">Test: Zeki kart okuttu</button>
+
+  <div id="log"></div>
+
+  <script>
+    const logDiv = document.getElementById('log');
+    const log = (msg) => {
+      logDiv.textContent += msg + "\n";
+    };
+
+    // === GERÇEK NFC (ANDROID İÇİN) ===
+    document.getElementById('start').onclick = async () => {
+      try {
+        if (!('NDEFReader' in window)) {
+          alert('Bu tarayıcı Web NFC desteklemiyor. Android Chrome kullan.');
+          return;
+        }
+
+        const reader = new NDEFReader();
+        await reader.scan();
+        log('NFC dinleme başladı.\nKartı telefona yaklaştır...');
+
+        reader.onreading = async (event) => {
+          const cardUid = event.serialNumber || 'bilinmiyor';
+          const scannedAt = new Date().toISOString();
+
+          log(`\nKART OKUNDU (GERÇEK NFC): ${cardUid}\nTarih-Saat: ${scannedAt}`);
+
+          await sendToServer(cardUid, scannedAt);
+        };
+      } catch (err) {
+        console.error(err);
+        alert('NFC başlatılırken hata: ' + err);
+      }
+    };
+
+    // === TEST BUTONLARI (PC'DE NFC OLMADAN) ===
+    document.getElementById('testAhmet').onclick = () => {
+      const scannedAt = new Date().toISOString();
+      const cardUid = 'CARD_AHMET';   // server.js içindeki demo kart
+      log(`\n[TEST] Ahmet kart okuttu: ${cardUid}\nTarih-Saat: ${scannedAt}`);
+      sendToServer(cardUid, scannedAt);
+    };
+
+    document.getElementById('testZeki').onclick = () => {
+      const scannedAt = new Date().toISOString();
+      const cardUid = 'CARD_ZEKI';    // server.js içindeki demo kart
+      log(`\n[TEST] Zeki kart okuttu: ${cardUid}\nTarih-Saat: ${scannedAt}`);
+      sendToServer(cardUid, scannedAt);
+    };
+
+    // === ORTAK: SUNUCUYA GÖNDERME ===
+    async function sendToServer(cardUid, scannedAt) {
+      try {
+        const res = await fetch('/api/nfc-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cardUid, scannedAt })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          log('Sunucu cevabı (hata): ' + data.error);
+        } else {
+          const p = data.person;
+          log(`Sunucu kaydetti: ${p.firstName} ${p.lastName} (${p.role})`);
+        }
+      } catch (e) {
+        log('Sunucuya gönderilirken hata: ' + e.message);
+      }
+    }
+  </script>
+</body>
+</html>
