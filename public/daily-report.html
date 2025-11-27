@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Günlük Tevzi Raporu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, Arial; background:#f5f5f5; margin:0; padding:16px; }
+    h1 { margin:0 0 12px 0; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    input, button {
+      padding:8px 10px; font-size:14px; border-radius:6px; border:1px solid #ccc;
+    }
+    button { background:#0d6efd; color:white; border:none; cursor:pointer; }
+    .card { background:white; border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:12px; }
+    table { width:100%; border-collapse:collapse; background:#fff; font-size:13px; }
+    th, td { border:1px solid #eee; padding:8px; text-align:left; }
+    thead { background:#f1f3f5; }
+    .muted { color:#666; font-size:12px; }
+  </style>
+</head>
+<body>
+
+<h1>Günlük Tevzi Raporu</h1>
+
+<div class="row">
+  <input type="date" id="dateInput" />
+  <button id="loadBtn">Raporu Getir</button>
+  <button id="csvBtn">CSV İndir</button>
+</div>
+
+<div class="card" id="summaryCard">Yükleniyor...</div>
+
+<div class="card">
+  <h3>Personel Bazlı Süre</h3>
+  <table>
+    <thead><tr><th>Personel</th><th>Süre</th></tr></thead>
+    <tbody id="perPersonBody"></tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>İş Bazlı Süre</h3>
+  <table>
+    <thead><tr><th>İş</th><th>Süre</th></tr></thead>
+    <tbody id="perJobBody"></tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Tüm Atamalar</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Personel</th><th>Görev</th><th>İş</th><th>Başlangıç</th><th>Bitiş</th><th>Süre</th>
+      </tr>
+    </thead>
+    <tbody id="assignmentsBody"></tbody>
+  </table>
+</div>
+
+<script>
+  const dateInput = document.getElementById("dateInput");
+  const loadBtn = document.getElementById("loadBtn");
+  const csvBtn = document.getElementById("csvBtn");
+
+  const summaryCard = document.getElementById("summaryCard");
+  const perPersonBody = document.getElementById("perPersonBody");
+  const perJobBody = document.getElementById("perJobBody");
+  const assignmentsBody = document.getElementById("assignmentsBody");
+
+  function minsToText(mins){
+    mins = Math.round(mins);
+    const h = Math.floor(mins/60);
+    const m = mins%60;
+    if(h===0) return `${m} dk`;
+    if(m===0) return `${h} saat`;
+    return `${h} saat ${m} dk`;
+  }
+
+  function todayStr(){
+    return new Date().toISOString().slice(0,10);
+  }
+  dateInput.value = todayStr();
+
+  async function loadReport(){
+    const date = dateInput.value || todayStr();
+
+    // 1) aggregate rapor
+    const repRes = await fetch(`/api/reports/daily?date=${date}`);
+    const rep = await repRes.json();
+
+    if(!rep.ok){
+      summaryCard.textContent = "Rapor alınamadı.";
+      return;
+    }
+
+    summaryCard.innerHTML = `
+      <b>Tarih:</b> ${rep.date}<br/>
+      <b>Toplam Atama:</b> ${rep.totalAssignments}<br/>
+      <b>Toplam Süre:</b> ${minsToText(rep.totalMinutes)}<br/>
+      <div class="muted">Not: Süreler atama başlangıç-bitiş farkından hesaplanır.</div>
+    `;
+
+    // personel tablosu
+    perPersonBody.innerHTML = "";
+    rep.perPerson.forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${x.name}</td><td>${minsToText(x.minutes)}</td>`;
+      perPersonBody.appendChild(tr);
+    });
+
+    // iş tablosu
+    perJobBody.innerHTML = "";
+    rep.perJob.forEach(x=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${x.job}</td><td>${minsToText(x.minutes)}</td>`;
+      perJobBody.appendChild(tr);
+    });
+
+    // 2) tüm atamalar
+    const assRes = await fetch(`/api/assignments?date=${date}`);
+    const ass = await assRes.json();
+    assignmentsBody.innerHTML = "";
+
+    (ass.data||[]).forEach((a,i)=>{
+      const s = new Date(a.startTime);
+      const e = new Date(a.endTime);
+      const mins = (e-s)/60000;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td>${a.fullName}</td>
+        <td>${a.role}</td>
+        <td>${a.jobName}</td>
+        <td>${a.startTime.slice(11,16)}</td>
+        <td>${a.endTime.slice(11,16)}</td>
+        <td>${minsToText(mins)}</td>
+      `;
+      assignmentsBody.appendChild(tr);
+    });
+
+    // CSV için hafızada tut
+    window.__lastAssignments = ass.data || [];
+  }
+
+  function downloadCSV(){
+    const list = window.__lastAssignments || [];
+    const rows = [
+      ["Personel","Görev","İş","Başlangıç","Bitiş","Süre(dk)"]
+    ];
+
+    list.forEach(a=>{
+      const s = new Date(a.startTime);
+      const e = new Date(a.endTime);
+      const mins = Math.round((e-s)/60000);
+      rows.push([
+        a.fullName, a.role, a.jobName,
+        a.startTime.slice(11,16),
+        a.endTime.slice(11,16),
+        mins
+      ]);
+    });
+
+    const csv = rows.map(r=>r.map(x=>`"${String(x).replaceAll('"','""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tevzi-rapor-${dateInput.value||todayStr()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  loadBtn.onclick = loadReport;
+  csvBtn.onclick = downloadCSV;
+
+  loadReport();
+</script>
+
+</body>
+</html>

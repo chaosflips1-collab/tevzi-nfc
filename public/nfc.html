@@ -1,95 +1,145 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>NFC Kart Okuma</title>
+  <meta charset="UTF-8" />
+  <title>NFC Kart Okuma Paneli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f5f5f5;
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
     }
     button {
-      padding: 10px 16px;
-      font-size: 16px;
+      padding: 8px 14px;
+      font-size: 14px;
       border-radius: 6px;
-      border: 1px solid #007bff;
-      background: #007bff;
+      border: 1px solid #0d6efd;
+      background: #0d6efd;
       color: #fff;
       cursor: pointer;
-      margin-right: 10px;
-      margin-top: 10px;
+    }
+    button.secondary {
+      background: #e9ecef;
+      color: #333;
+      border-color: #ced4da;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
     #log {
-      margin-top: 20px;
-      font-size: 14px;
+      margin-top: 16px;
+      font-size: 13px;
       line-height: 1.4;
       white-space: pre-line;
-      border-top: 1px solid #ddd;
-      padding-top: 10px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    #todayList {
+      margin-top: 16px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-size: 13px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    #todayList h3 {
+      margin-top: 0;
+      font-size: 14px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #e9f3ff;
+      color: #0d6efd;
+      margin-left: 4px;
+    }
+    .muted {
+      color: #666;
+      font-size: 12px;
+    }
+    a.link {
+      color: #0d6efd;
+      text-decoration: none;
+      font-size: 13px;
     }
   </style>
 </head>
 <body>
   <h1>NFC Kart Okuma Paneli</h1>
-  <p>Bu sayfayı <b>Android telefon</b> + <b>Chrome</b> ile açmalısın.</p>
+  <p><b>Bu sayfayı kart okutmak için:</b></p>
+  <p>- <b>Android telefon</b> + <b>Chrome</b> ile aç</p>
+  <p>- Kartı telefonun arka kısmına yaklaştır</p>
 
-  <!-- GERÇEK NFC için buton -->
-  <button id="start">NFC Okumayı Başlat</button>
+  <div class="row">
+    <button id="startBtn">📡 NFC Okumayı Başlat</button>
+    <button id="stopBtn" class="secondary" disabled>⛔ Durdur</button>
+  </div>
 
-  <!-- SADECE TEST İÇİN: NFC OLMADAN KART OKUTMA SİMÜLASYONU -->
-  <button id="testAhmet">Test: Ahmet kart okuttu</button>
-  <button id="testZeki">Test: Zeki kart okuttu</button>
+  <p class="muted">
+    Web NFC desteği sadece bazı Android telefonlarda ve Chrome tarayıcıda çalışır.
+    Çalışmazsa alt taraftaki test butonlarını kullanabilirsin.
+  </p>
+
+  <div class="row">
+    <button id="testAhmetBtn" class="secondary">[TEST] Ahmet kart okuttu</button>
+    <button id="testZekiBtn" class="secondary">[TEST] Zeki kart okuttu</button>
+  </div>
 
   <div id="log"></div>
 
+  <div id="todayList">
+    <h3>Bugün Kart Okutanlar</h3>
+    <div id="todayInner" class="muted">Yükleniyor...</div>
+  </div>
+
+  <p style="margin-top: 16px;">
+    <a class="link" href="/">← Tevzi İş Atama ekranına dön</a>
+  </p>
+
   <script>
     const logDiv = document.getElementById('log');
-    const log = (msg) => {
-      logDiv.textContent += msg + "\n";
-    };
+    const todayInner = document.getElementById('todayInner');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const testAhmetBtn = document.getElementById('testAhmetBtn');
+    const testZekiBtn = document.getElementById('testZekiBtn');
 
-    // === GERÇEK NFC (ANDROID İÇİN) ===
-    document.getElementById('start').onclick = async () => {
-      try {
-        if (!('NDEFReader' in window)) {
-          alert('Bu tarayıcı Web NFC desteklemiyor. Android Chrome kullan.');
-          return;
-        }
+    let ndefReader = null;
 
-        const reader = new NDEFReader();
-        await reader.scan();
-        log('NFC dinleme başladı.\nKartı telefona yaklaştır...');
+    function log(msg) {
+      const now = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      logDiv.textContent = `[${now}] ${msg}\n` + logDiv.textContent;
+    }
 
-        reader.onreading = async (event) => {
-          const cardUid = event.serialNumber || 'bilinmiyor';
-          const scannedAt = new Date().toISOString();
+    function isoNow() {
+      return new Date().toISOString();
+    }
 
-          log(`\nKART OKUNDU (GERÇEK NFC): ${cardUid}\nTarih-Saat: ${scannedAt}`);
-
-          await sendToServer(cardUid, scannedAt);
-        };
-      } catch (err) {
-        console.error(err);
-        alert('NFC başlatılırken hata: ' + err);
-      }
-    };
-
-    // === TEST BUTONLARI (PC'DE NFC OLMADAN) ===
-    document.getElementById('testAhmet').onclick = () => {
-      const scannedAt = new Date().toISOString();
-      const cardUid = 'CARD_AHMET';   // server.js içindeki demo kart
-      log(`\n[TEST] Ahmet kart okuttu: ${cardUid}\nTarih-Saat: ${scannedAt}`);
-      sendToServer(cardUid, scannedAt);
-    };
-
-    document.getElementById('testZeki').onclick = () => {
-      const scannedAt = new Date().toISOString();
-      const cardUid = 'CARD_ZEKI';    // server.js içindeki demo kart
-      log(`\n[TEST] Zeki kart okuttu: ${cardUid}\nTarih-Saat: ${scannedAt}`);
-      sendToServer(cardUid, scannedAt);
-    };
-
-    // === ORTAK: SUNUCUYA GÖNDERME ===
     async function sendToServer(cardUid, scannedAt) {
       try {
         const res = await fetch('/api/nfc-scan', {
@@ -101,15 +151,115 @@
         const data = await res.json();
 
         if (!data.ok) {
-          log('Sunucu cevabı (hata): ' + data.error);
-        } else {
-          const p = data.person;
-          log(`Sunucu kaydetti: ${p.firstName} ${p.lastName} (${p.role})`);
+          log(`❌ Sunucu cevabı (hata): ${data.error || 'Bilinmeyen hata'}`);
+          return;
         }
-      } catch (e) {
-        log('Sunucuya gönderilirken hata: ' + e.message);
+
+        const p = data.person;
+        log(`✅ Sunucu kaydetti: ${p.firstName} ${p.lastName} (${p.role})`);
+        refreshTodayScans();
+      } catch (err) {
+        log('❌ Sunucuya gönderilirken hata: ' + err.message);
       }
     }
+
+    async function refreshTodayScans() {
+      try {
+        const res = await fetch('/api/today-scans');
+        const data = await res.json();
+        if (!data.ok) {
+          todayInner.textContent = 'Veri alınırken hata oluştu.';
+          return;
+        }
+
+        const list = data.data || [];
+        if (list.length === 0) {
+          todayInner.textContent = 'Bugün kart okutan personel yok.';
+          return;
+        }
+
+        todayInner.innerHTML = '';
+        list.forEach(p => {
+          const div = document.createElement('div');
+          const time = p.firstScanAt ? p.firstScanAt.slice(11, 16) : '';
+          div.innerHTML = `
+            <b>${p.fullName}</b>
+            <span class="badge">${p.role}</span>
+            <span class="muted">• Giriş: ${time}</span>
+          `;
+          todayInner.appendChild(div);
+        });
+      } catch (e) {
+        todayInner.textContent = 'Sunucuya ulaşılamıyor.';
+      }
+    }
+
+    async function startNfc() {
+      if (!('NDEFReader' in window)) {
+        alert('Bu cihazda Web NFC desteği yok. Android + Chrome ile dene.');
+        log('⚠ Web NFC desteklenmiyor.');
+        return;
+      }
+
+      try {
+        ndefReader = new NDEFReader();
+        await ndefReader.scan();
+        log('📡 NFC dinleme başladı. Kartı telefona yaklaştır...');
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+
+        ndefReader.onreading = event => {
+          const cardUid = event.serialNumber || 'bilinmiyor';
+          const scannedAt = isoNow();
+          log(`🎫 Kart okundu (GERÇEK): UID=${cardUid}\nSunucuya gönderiliyor...`);
+          sendToServer(cardUid, scannedAt);
+        };
+
+        ndefReader.onreadingerror = () => {
+          log('⚠ Kart okunurken hata oluştu.');
+        };
+      } catch (err) {
+        console.error(err);
+        log('❌ NFC başlatılırken hata: ' + err.message);
+        alert('NFC başlatılırken hata: ' + err.message);
+      }
+    }
+
+    function stopNfc() {
+      try {
+        if (ndefReader && ndefReader._scan) {
+          // bazı implemantasyonlarda stop yok, o yüzden sadece loglayalım
+          log('⛔ NFC dinleme durduruldu (tarayıcı sekmesini kapatmak tam durdurur).');
+        } else {
+          log('⛔ NFC dinleme durduruldu.');
+        }
+      } catch (e) {
+        // sessizce geç
+      }
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+
+    // === OLAY BAĞLANTILARI ===
+    startBtn.addEventListener('click', startNfc);
+    stopBtn.addEventListener('click', stopNfc);
+
+    testAhmetBtn.addEventListener('click', () => {
+      const scannedAt = isoNow();
+      const cardUid = 'CARD_AHMET'; // server.js içindeki demo kart
+      log(`🧪 [TEST] Ahmet kart okuttu: UID=${cardUid}\nSunucuya gönderiliyor...`);
+      sendToServer(cardUid, scannedAt);
+    });
+
+    testZekiBtn.addEventListener('click', () => {
+      const scannedAt = isoNow();
+      const cardUid = 'CARD_ZEKI'; // server.js içindeki demo kart
+      log(`🧪 [TEST] Zeki kart okuttu: UID=${cardUid}\nSunucuya gönderiliyor...`);
+      sendToServer(cardUid, scannedAt);
+    });
+
+    // sayfa açılınca bugünkü listeleri getir
+    refreshTodayScans();
   </script>
 </body>
 </html>

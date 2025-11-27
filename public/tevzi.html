@@ -7,170 +7,152 @@
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
+      margin: 0; padding: 0; background: #f5f5f5;
     }
-    .page {
-      display: flex;
-      height: 100vh;
-    }
+    .page { display: flex; height: 100vh; }
+
     .left {
-      width: 28%;
-      border-right: 1px solid #ddd;
-      background: #ffffff;
-      padding: 16px;
-      box-sizing: border-box;
-      overflow-y: auto;
+      width: 28%; border-right: 1px solid #ddd; background: #fff;
+      padding: 16px; box-sizing: border-box; overflow-y: auto;
     }
     .right {
-      width: 72%;
-      padding: 16px;
-      box-sizing: border-box;
-      overflow-y: auto;
+      width: 72%; padding: 16px; box-sizing: border-box; overflow-y: auto;
+      position: relative;
     }
-    h1, h2, h3 {
-      margin-top: 0;
-    }
+
+    h1, h2, h3 { margin-top: 0; }
+
     .person-list-item {
-      width: 100%;
-      text-align: left;
-      padding: 8px 10px;
-      margin-bottom: 6px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      background: #fafafa;
-      cursor: pointer;
-      font-size: 14px;
+      width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 6px;
+      border-radius: 6px; border: 1px solid #ddd; background: #fafafa;
+      cursor: pointer; font-size: 14px;
     }
     .person-list-item.selected {
-      background: #0d6efd;
-      color: #fff;
-      border-color: #0d6efd;
+      background: #0d6efd; color: #fff; border-color: #0d6efd;
     }
-    label {
-      font-size: 13px;
-      display: block;
-      margin-bottom: 4px;
-    }
+
+    label { font-size: 13px; display: block; margin-bottom: 4px; }
     select {
-      width: 100%;
-      padding: 6px 8px;
-      font-size: 14px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      margin-bottom: 10px;
+      width: 100%; padding: 7px 8px; font-size: 14px;
+      border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;
+      background: #fff;
     }
-    .row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    .row > div {
-      flex: 1;
-    }
-    button {
-      cursor: pointer;
-    }
+
+    .row { display: flex; gap: 12px; margin-bottom: 8px; }
+    .row > div { flex: 1; }
+
     .btn-primary {
-      background: #0d6efd;
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 14px;
+      background: #0d6efd; color: #fff; border: none; padding: 8px 16px;
+      border-radius: 6px; font-size: 14px; cursor:pointer;
     }
     .btn-secondary {
-      background: #e9ecef;
-      color: #333;
-      border: 1px solid #ced4da;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 14px;
-      margin-left: 8px;
+      background: #e9ecef; color: #333; border: 1px solid #ced4da;
+      padding: 8px 16px; border-radius: 6px; font-size: 14px; margin-left: 8px; cursor:pointer;
     }
     .btn-danger {
-      background: #dc3545;
-      color: #fff;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 12px;
+      background: #dc3545; color: #fff; border: none; padding: 4px 10px;
+      border-radius: 6px; font-size: 12px; cursor:pointer;
     }
-    .timeline-wrapper {
-      margin-top: 12px;
-      margin-bottom: 16px;
-    }
+
+    .timeline-wrapper { margin-top: 12px; margin-bottom: 16px; }
     .timeline-bar {
-      position: relative;
-      width: 100%;
-      height: 32px;
-      background: #e9f3ff;
-      border-radius: 6px;
-      border: 1px solid #cfe2ff;
-      overflow: hidden;
+      position: relative; width: 100%; height: 32px; background: #e9f3ff;
+      border-radius: 6px; border: 1px solid #cfe2ff; overflow: hidden;
     }
     .timeline-segment {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      background: #0d6efd;
-      opacity: 0.8;
+      position: absolute; top: 0; bottom: 0; background: #0d6efd; opacity: 0.8;
     }
     .timeline-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      margin-top: 4px;
-      color: #555;
+      display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; color: #555;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
+
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; }
+    thead { background: #f1f3f5; }
+    th, td { padding: 8px; border: 1px solid #dee2e6; text-align: left; }
+    tfoot { font-size: 12px; color: #666; }
+    th.actions-col, td.actions-col { text-align: center; width: 80px; }
+
+    #summaryText { font-size: 12px; color: #555; margin: 4px 0 10px 0; }
+    .muted { color:#666; font-size:12px; }
+
+    /* Sağ üst Ayarlar butonu */
+    #settingsBtn {
+      position: absolute; top: 10px; right: 10px;
+      background: #fff; border:1px solid #ddd; padding:6px 10px; border-radius:8px;
+      font-size: 13px; cursor:pointer;
+    }
+
+    /* Sağdan açılan panel */
+    #settingsPanel {
+      position: fixed; top:0; right:0; height:100vh; width:320px;
+      background:#fff; border-left:1px solid #ddd; box-shadow:-4px 0 12px rgba(0,0,0,0.08);
+      padding:14px; box-sizing:border-box; display:none; z-index:9999;
+    }
+    #settingsPanel h3 { margin-top:0; display:flex; justify-content:space-between; align-items:center; }
+    #settingsPanel input {
+      width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:6px; margin-bottom:8px;
+      font-size:14px;
+    }
+    #settingsPanel .panel-row { display:flex; gap:8px; }
+    #settingsPanel .panel-row button { flex:1; }
+
+    #jobsList {
+      margin-top:10px; font-size:13px; color:#333; max-height: 50vh; overflow:auto;
+      border-top:1px dashed #eee; padding-top:8px;
+    }
+    #jobsList div { padding:4px 0; }
+
+    /* Panel kapatma butonu */
+    #closePanelBtn {
+      border:none; background:transparent; font-size:20px; cursor:pointer; line-height:1;
+    }
+
+    /* küçük status bar */
+    #statusBar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 10px;
+      background: #111;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 999px;
       font-size: 13px;
+      display: none;
+      z-index: 10000;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      max-width: 90vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    thead {
-      background: #f1f3f5;
-    }
-    th, td {
-      padding: 8px;
-      border: 1px solid #dee2e6;
-      text-align: left;
-    }
-    tfoot {
-      font-size: 12px;
-      color: #666;
-    }
-    th.actions-col, td.actions-col {
-      text-align: center;
-      width: 80px;
-    }
-    #summaryText {
-      font-size: 12px;
-      color: #555;
-      margin: 4px 0 10px 0;
-    }
+    #statusBar.ok { background:#198754; }
+    #statusBar.err { background:#dc3545; }
+    #statusBar.warn { background:#fd7e14; }
   </style>
 </head>
 <body>
+
+<div id="statusBar"></div>
+
 <div class="page">
   <div class="left">
-    <h2>Bugün Kart Okutan Personeller</h2>
-    <div id="personnelList">
-      Yükleniyor...
-    </div>
+    <h2>Kart Okutan Personeller</h2>
+    <div id="personnelList">Yükleniyor...</div>
   </div>
 
   <div class="right">
+    <button id="settingsBtn">⚙ Ayarlar</button>
+
     <h1>Tevzi İş Atama</h1>
     <p id="selectedPersonInfo">Seçili personel yok.</p>
 
     <div class="row">
       <div>
         <label for="jobSelect">İş / Proje</label>
-        <select id="jobSelect"></select>
+        <select id="jobSelect">
+          <option>Yükleniyor...</option>
+        </select>
       </div>
       <div>
         <label for="startTimeSelect">İş Başlangıç Saati</label>
@@ -212,13 +194,28 @@
       <tbody id="assignmentsTableBody"></tbody>
       <tfoot>
       <tr>
-        <td colspan="6">
-          Not: Kayıtlar sunucu tarafında saklanıyor, sayfayı yenileyince silinmez.
-        </td>
+        <td colspan="6">Not: Kayıtlar sunucu tarafında saklanıyor, sayfayı yenileyince silinmez.</td>
       </tr>
       </tfoot>
     </table>
   </div>
+</div>
+
+<!-- ====== AYARLAR PANELİ ====== -->
+<div id="settingsPanel">
+  <h3>
+    Ayarlar
+    <button id="closePanelBtn" title="Kapat">×</button>
+  </h3>
+
+  <label>Yeni İş / Proje Ekle</label>
+  <input id="addJobInput" type="text" placeholder="Örn: 5 PORT TAŞ İŞLERİ" />
+  <div class="panel-row">
+    <button class="btn-primary" id="addJobBtn">Ekle</button>
+    <button class="btn-secondary" id="reloadJobsBtn">Yenile</button>
+  </div>
+
+  <div id="jobsList"></div>
 </div>
 
 <script>
@@ -226,6 +223,18 @@
   let todayPersonnel = [];
   let selectedPerson = null;
   let assignments = [];
+  let jobs = [];
+  let isAssigning = false;
+
+  function showStatus(msg, type="ok", ms=1600){
+    const bar = document.getElementById("statusBar");
+    bar.className = "";
+    bar.classList.add(type);
+    bar.textContent = msg;
+    bar.style.display = "block";
+    clearTimeout(bar.__t);
+    bar.__t = setTimeout(()=> bar.style.display="none", ms);
+  }
 
   function getTodayStr() {
     return new Date().toISOString().slice(0, 10);
@@ -240,27 +249,10 @@
     return `${hours} saat ${mins} dk`;
   }
 
-  // ===== SELECT DOLDURMA =====
-  function initJobs() {
-    const jobSelect = document.getElementById('jobSelect');
-    const jobs = [
-      'Çelik Montaj 3. Kat',
-      'Makine Bakım - Hat 2',
-      'Muhtelif Boru Donatım İşleri',
-      'Depo Düzenleme',
-    ];
-    jobSelect.innerHTML = '';
-    jobs.forEach(job => {
-      const opt = document.createElement('option');
-      opt.value = job;
-      opt.textContent = job;
-      jobSelect.appendChild(opt);
-    });
-  }
-
+  // ===== SELECT DOLDURMA (SAAT) =====
   function initTimeSelects() {
     const startSel = document.getElementById('startTimeSelect');
-    const endSel = document.getElementById('endTimeSelect');
+    const endSel   = document.getElementById('endTimeSelect');
     startSel.innerHTML = '';
     endSel.innerHTML = '';
 
@@ -282,6 +274,65 @@
     endSel.value = '19:00';
   }
 
+  // ===== İŞLERİ SUNUCUDAN ÇEK =====
+  async function loadJobs() {
+    const jobSelect = document.getElementById('jobSelect');
+
+    // seçimi koruyalım
+    const prevSelected = jobSelect.value;
+
+    jobSelect.innerHTML = '<option>Yükleniyor...</option>';
+
+    try {
+      const res = await fetch('/api/jobs');
+      const data = await res.json();
+      if (!data.ok) {
+        jobSelect.innerHTML = '<option>İş listesi alınamadı</option>';
+        showStatus("İş listesi alınamadı", "err");
+        return;
+      }
+
+      jobs = data.data || [];
+      jobSelect.innerHTML = '';
+
+      if (jobs.length === 0) {
+        jobSelect.innerHTML = '<option>İş listesi boş</option>';
+      } else {
+        jobs.forEach(job => {
+          const opt = document.createElement('option');
+          opt.value = job;
+          opt.textContent = job;
+          jobSelect.appendChild(opt);
+        });
+
+        // önceki seçim hala varsa geri seç
+        if (prevSelected && jobs.includes(prevSelected)) {
+          jobSelect.value = prevSelected;
+        }
+      }
+
+      renderJobsListInPanel();
+    } catch (e) {
+      console.error(e);
+      jobSelect.innerHTML = '<option>Sunucuya ulaşılamıyor</option>';
+      showStatus("Sunucuya ulaşılamıyor (jobs)", "err");
+    }
+  }
+
+  function renderJobsListInPanel() {
+    const list = document.getElementById('jobsList');
+    list.innerHTML = '<h4 style="margin:10px 0 6px 0;">Mevcut İşler</h4>';
+    if (jobs.length === 0) {
+      list.innerHTML += '<div class="muted">Kayıtlı iş yok.</div>';
+      return;
+    }
+    jobs.forEach(j => {
+      const d = document.createElement('div');
+      d.textContent = '• ' + j;
+      list.appendChild(d);
+    });
+  }
+
   // ===== PERSONEL LİSTESİ =====
   async function loadTodayPersonnel() {
     const listDiv = document.getElementById('personnelList');
@@ -292,6 +343,7 @@
       const data = await res.json();
       if (!data.ok) {
         listDiv.textContent = 'Veri alınırken hata oluştu.';
+        showStatus("Kart okutanlar alınamadı", "err");
         return;
       }
       todayPersonnel = data.data || [];
@@ -299,6 +351,7 @@
     } catch (err) {
       console.error(err);
       listDiv.textContent = 'Sunucuya ulaşılamıyor.';
+      showStatus("Sunucuya ulaşılamıyor (scans)", "err");
     }
   }
 
@@ -337,6 +390,7 @@
         assignments = [];
         renderAssignmentsTable();
         renderTimeline();
+        showStatus("Atamalar alınamadı", "err");
         return;
       }
       assignments = data.data || [];
@@ -347,6 +401,7 @@
       assignments = [];
       renderAssignmentsTable();
       renderTimeline();
+      showStatus("Sunucuya ulaşılamıyor (assignments)", "err");
     }
   }
 
@@ -370,18 +425,17 @@
     let totalMinutesSelectedPerson = 0;
 
     todaysAssignments.forEach(a => {
-      // server düz format dönüyor ama nested gelse de düşmeyecek:
-      const fullName = a.fullName || (a.person && a.person.fullName) || '';
-      const role = a.role || (a.person && a.person.role) || '';
-      const personId = a.personId || (a.person && a.person.id);
+      const fullName = a.fullName || '';
+      const role = a.role || '';
+      const personId = a.personId;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${fullName}</td>
         <td>${role}</td>
-        <td>${a.jobName}</td>
-        <td>${a.startTime.slice(11,16)}</td>
-        <td>${a.endTime.slice(11,16)}</td>
+        <td>${a.jobName || ''}</td>
+        <td>${(a.startTime || '').slice(11,16)}</td>
+        <td>${(a.endTime || '').slice(11,16)}</td>
         <td class="actions-col">
           <button class="btn-danger delete-btn" data-id="${a.id}">Sil</button>
         </td>
@@ -390,7 +444,7 @@
 
       const start = new Date(a.startTime);
       const end = new Date(a.endTime);
-      const diffMinutes = (end - start) / 60000;
+      const diffMinutes = Math.max(0, (end - start) / 60000);
       totalMinutesAll += diffMinutes;
 
       if (selectedPerson && Number(personId) === Number(selectedPerson.personId)) {
@@ -398,7 +452,7 @@
       }
     });
 
-    let summaryText = `Bugün toplam ${todaysAssignments.length} iş ataması var, toplam süre yaklaşık ${formatMinutesToText(totalMinutesAll)}.`;
+    let summaryText = `Bugün toplam ${todaysAssignments.length} atama var, toplam süre yaklaşık ${formatMinutesToText(totalMinutesAll)}.`;
     if (selectedPerson) {
       summaryText += ` Seçili personelin bugünkü toplam süresi: ${formatMinutesToText(totalMinutesSelectedPerson)}.`;
     }
@@ -415,7 +469,7 @@
     const today = getTodayStr();
     const personAssignments = assignments.filter(
       a =>
-        Number(a.personId || (a.person && a.person.id)) === Number(selectedPerson.personId) &&
+        Number(a.personId) === Number(selectedPerson.personId) &&
         typeof a.startTime === 'string' &&
         a.startTime.slice(0,10) === today
     );
@@ -438,13 +492,18 @@
       seg.className = 'timeline-segment';
       seg.style.left = leftPct + '%';
       seg.style.width = widthPct + '%';
+      seg.title = `${a.jobName || ''} (${a.startTime.slice(11,16)} - ${a.endTime.slice(11,16)})`;
       bar.appendChild(seg);
     });
   }
 
   // ===== İŞ ATAMA BUTONU =====
   function setupAssignButton() {
-    document.getElementById('assignBtn').addEventListener('click', async () => {
+    const assignBtn = document.getElementById('assignBtn');
+
+    assignBtn.addEventListener('click', async () => {
+      if (isAssigning) return;
+
       if (!selectedPerson) {
         alert('Lütfen soldan bir personel seçin.');
         return;
@@ -452,9 +511,9 @@
 
       const today = getTodayStr();
 
-      // ✅ FRONT-END GÜNLÜK TEK ATAMA ÖN KONTROLÜ
+      // günlük tek atama ön kontrol
       const alreadyAssigned = assignments.some(a =>
-        Number(a.personId || (a.person && a.person.id)) === Number(selectedPerson.personId) &&
+        Number(a.personId) === Number(selectedPerson.personId) &&
         typeof a.startTime === 'string' &&
         a.startTime.startsWith(today)
       );
@@ -483,6 +542,10 @@
       const endTime   = `${today}T${endLabel}:00`;
 
       try {
+        isAssigning = true;
+        assignBtn.disabled = true;
+        assignBtn.textContent = "Kaydediliyor...";
+
         const res = await fetch('/api/assign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -498,21 +561,29 @@
 
         if (!data.ok) {
           alert('Hata: ' + (data.error || 'Atama yapılamadı.'));
+          showStatus("Atama yapılamadı", "err");
           return;
         }
 
-        // ✅ server’dan yeniden çekiyoruz
+        showStatus("Atama kaydedildi", "ok");
         await loadAssignmentsToday();
 
       } catch (err) {
         console.error('Atama isteği hatası:', err);
         alert('Sunucuya ulaşılamadı. Atama kaydedilemedi.');
+        showStatus("Sunucuya ulaşılamadı (assign)", "err");
+      } finally {
+        isAssigning = false;
+        assignBtn.disabled = false;
+        assignBtn.textContent = "İş Ata";
       }
     });
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
       loadTodayPersonnel();
       loadAssignmentsToday();
+      loadJobs();
+      showStatus("Listeler yenilendi", "ok");
     });
   }
 
@@ -538,25 +609,88 @@
 
         if (!data.ok) {
           alert('Silme sırasında hata: ' + (data.error || 'Bilinmeyen hata'));
+          showStatus("Silinemedi", "err");
           return;
         }
 
-        // ✅ server’dan yeniden çek
+        showStatus("Atama silindi", "ok");
         await loadAssignmentsToday();
 
       } catch (err) {
         console.error('Silme isteği hatası:', err);
         alert('Sunucuya ulaşılamadı. Kayıt silinemedi.');
+        showStatus("Sunucuya ulaşılamadı (delete)", "err");
       }
     });
   }
 
+  // ===== AYARLAR PANELİ =====
+  function setupSettings() {
+    const btn = document.getElementById('settingsBtn');
+    const panel = document.getElementById('settingsPanel');
+    const closeBtn = document.getElementById('closePanelBtn');
+
+    function openClosePanel(force){
+      const willOpen = (typeof force === "boolean") ? force : (panel.style.display !== 'block');
+      panel.style.display = willOpen ? 'block' : 'none';
+    }
+
+    btn.onclick = () => openClosePanel();
+    closeBtn.onclick = () => openClosePanel(false);
+
+    // dışarı tıklayınca kapa
+    document.addEventListener("click", (e)=>{
+      if(panel.style.display !== "block") return;
+      const isInside = panel.contains(e.target) || btn.contains(e.target);
+      if(!isInside) openClosePanel(false);
+    });
+
+    // ESC ile kapa
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && panel.style.display === "block"){
+        openClosePanel(false);
+      }
+    });
+
+    document.getElementById('addJobBtn').onclick = async () => {
+      const inp = document.getElementById('addJobInput');
+      const val = inp.value.trim();
+      if (!val) {
+        alert('İş adı boş olamaz.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobName: val })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          alert('İş eklenemedi: ' + (data.error || 'Bilinmeyen hata'));
+          showStatus("İş eklenemedi", "err");
+          return;
+        }
+        inp.value = '';
+        showStatus("İş eklendi", "ok");
+        await loadJobs();
+      } catch (e) {
+        alert('Sunucuya ulaşılamadı.');
+        showStatus("Sunucuya ulaşılamadı (job add)", "err");
+      }
+    };
+
+    document.getElementById('reloadJobsBtn').onclick = () => loadJobs();
+  }
+
   // ===== SAYFA YÜKLENİNCE =====
   document.addEventListener('DOMContentLoaded', () => {
-    initJobs();
     initTimeSelects();
     setupAssignButton();
     setupDeleteHandler();
+    setupSettings();
+    loadJobs();
     loadTodayPersonnel();
     loadAssignmentsToday();
   });
