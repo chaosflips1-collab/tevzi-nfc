@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 
 // Demo persons (şimdilik sabit)
 const persons = [
-  { id: 1, firstName: 'Test',       lastName: 'Person', role: 'Usta',       cardUid: '613D8D24' },
+  { id: 1, firstName: 'Okan',       lastName: 'Yucel', role: 'Puantör',       cardUid: '613D8D24' },
   { id: 2, firstName: 'Ahmet Seyfi', lastName: 'Yüksel', role: 'Depocu',    cardUid: 'CARD_AHMET' },
   { id: 3, firstName: 'Zeki Okan',   lastName: 'Kaya',   role: 'Boru Ustası', cardUid: 'CARD_ZEKI' }
 ];
