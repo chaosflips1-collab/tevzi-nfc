@@ -23,9 +23,9 @@ app.get('/', (req, res) => {
 const persons = [
   {
     id: 1,
-    firstName: 'Test',
-    lastName: 'Person',
-    role: 'Usta',
+    firstName: 'Okan',
+    lastName: 'Yucel',
+    role: 'Puantör',
     cardUid: '613D8D24'   // ✔ SENİN GERÇEK NFC KART UID'İN
   }
 ];
