@@ -245,10 +245,23 @@
       border-radius: 10px;
       border-left: 3px solid var(--accent);
       font-size: 13px;
+      cursor: pointer;
+      transition: background .15s, box-shadow .15s, transform .05s, border-color .15s;
+    }
+
+    .person-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(15,23,42,0.16);
     }
 
     .person-card strong {
       font-size: 14px;
+    }
+
+    .person-card.selected {
+      border-color: #22c55e;
+      background: #ecfdf3;
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.7);
     }
 
     .time-box {
@@ -362,7 +375,7 @@
     .section-sub {
       font-size: 12px;
       color: var(--muted);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .card {
@@ -494,6 +507,7 @@
             <h2>Kart Okutan Personeller</h2>
             <div class="left-column-sub">
               NFC ile okutan personellerin giriş-çıkışları anlık listelenir.
+              <br><strong>İş atamak için soldan personeli tıkla.</strong>
             </div>
             <div id="scanList">Yükleniyor...</div>
           </div>
@@ -501,6 +515,10 @@
           <!-- RIGHT COLUMN -->
           <div class="right-column">
             <h1>Tevzi İş Atama</h1>
+
+            <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">
+              Seçili personel: <span id="selectedPersonLabel" style="font-weight:600; color:#111827;">(yok)</span>
+            </div>
 
             <div class="row">
               <div style="flex:1;">
@@ -556,16 +574,45 @@
         <div class="card">
           <div class="section-title">Günlük Zaman Çizelgesi</div>
           <div class="section-sub">
-            Bugün kart okutan personellerin ilk ve son okutma saatleri. Saatler TR saatine göre gösterilir.
+            Seçtiğin tarihte kart okutan personellerin ilk ve son okutma saatleri.
+            Saatler TR saatine göre gösterilir.
           </div>
+
+          <div class="row" style="align-items:flex-end; margin-bottom:6px;">
+            <div>
+              <label>Tarih</label><br>
+              <input type="date" id="reportDate"
+                     style="padding:7px 9px; font-size:13px; border-radius:8px; border:1px solid var(--border);">
+            </div>
+            <div>
+              <label>Vardiya</label><br>
+              <select id="shiftFilter"
+                      style="padding:7px 9px; font-size:13px; border-radius:8px; border:1px solid var(--border);">
+                <option value="all">Hepsi</option>
+                <option value="Sabah">Sabah</option>
+                <option value="Akşam">Akşam</option>
+              </select>
+            </div>
+            <div style="margin-left:auto; text-align:right;">
+              <button class="assign-btn secondary" onclick="loadTimeline()">Listeyi Yenile</button>
+              <button class="assign-btn" style="margin-left:6px;" onclick="exportReportCsv()">Excel (CSV) İndir</button>
+            </div>
+          </div>
+
+          <div id="timelineSummary"
+               style="font-size:12px; color:var(--muted); margin-bottom:4px;">
+          </div>
+
           <table>
             <thead>
             <tr>
               <th>Personel</th>
               <th>Görev</th>
+              <th>Vardiya</th>
               <th>İlk Okutma</th>
               <th>Son Okutma</th>
               <th>Toplam Okutma</th>
+              <th>Çalışma Süresi</th>
             </tr>
             </thead>
             <tbody id="timelineBody"></tbody>
@@ -578,7 +625,7 @@
         <div class="card">
           <div class="section-title">NFC Logları</div>
           <div class="section-sub">
-            Tüm okutmalar (sadece bugünün değil, sunucu yeniden başlayana kadar) kronolojik olarak listelenir.
+            Tüm okutmalar (sunucu yeniden başlayana kadar) kronolojik olarak listelenir.
           </div>
           <table>
             <thead>
@@ -600,7 +647,8 @@
         <div class="card">
           <div class="section-title">Personel Yönetimi</div>
           <div class="section-sub">
-            Şimdilik sadece görüntüleme modunda. Daha sonra buraya personel ekleme / kart eşleştirme ekranlarını koyarız.
+            Şimdilik sadece görüntüleme modunda. Daha sonra buraya personel ekleme / kart eşleştirme ekranlarını
+            koyarız.
           </div>
           <table>
             <thead>
@@ -634,6 +682,37 @@
           </div>
           <div id="jobsPills" style="margin-top:6px;"></div>
         </div>
+
+        <div class="card">
+          <div class="section-title">Vardiya Ayarları</div>
+          <div class="section-sub">
+            Sabah ve akşam vardiyası saatlerini buradan güncelleyebilirsin. Raporlar bu saatlere göre “Sabah / Akşam”
+            olarak ayrılır.
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Sabah başlangıç</label><br>
+              <input type="time" id="dayStart" value="07:00">
+            </div>
+            <div>
+              <label>Sabah bitiş</label><br>
+              <input type="time" id="dayEnd" value="19:00">
+            </div>
+            <div>
+              <label>Akşam başlangıç</label><br>
+              <input type="time" id="nightStart" value="19:00">
+            </div>
+            <div>
+              <label>Akşam bitiş</label><br>
+              <input type="time" id="nightEnd" value="07:00">
+            </div>
+          </div>
+
+          <div class="text-right" style="margin-top:8px;">
+            <button class="assign-btn" onclick="saveShifts()">Vardiya Saatlerini Kaydet</button>
+          </div>
+        </div>
       </section>
 
     </div>
@@ -644,7 +723,14 @@
   // Base URL (aynı domen kullanıyoruz)
   const API = "";
 
-  // ---- Saat formatı: TR saati (UTC → +3) ----
+  // Global – seçili personel ID
+  let selectedPersonId = null;
+  let selectedPersonName = null;
+
+  // Son rapor datası (Excel/CSV export için)
+  let lastReportData = null;
+
+  // ---- Saat formatı: TR saati (UTC → +3, panel tarafında) ----
   function formatTimeTR(isoString) {
     if (!isoString) return "-";
     const d = new Date(isoString);
@@ -658,6 +744,15 @@
 
   function todayISODate() {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  function formatDuration(mins) {
+    const m = Number(mins || 0);
+    if (!m) return "";
+    const h = Math.floor(m / 60);
+    const r = m % 60;
+    if (h > 0) return `${h} sa ${r} dk`;
+    return `${r} dk`;
   }
 
   // ---- Menü navigasyonu ----
@@ -676,6 +771,10 @@
         loadScans();
         loadTodayAssignments();
       } else if (page === "timeline") {
+        const dateInput = document.getElementById("reportDate");
+        if (!dateInput.value) {
+          dateInput.value = todayISODate();
+        }
         loadTimeline();
       } else if (page === "logs") {
         loadLogs();
@@ -683,6 +782,7 @@
         loadPeople();
       } else if (page === "settings") {
         loadJobsForSettings();
+        loadShifts();
       }
     });
   });
@@ -757,7 +857,63 @@
     }
   }
 
-  // ------- LOAD TODAY SCANS (sol kart listesi) -------
+  // ------- VARDİYA AYARLARI -------
+  async function loadShifts() {
+    try {
+      const res = await fetch(API + "/api/shifts");
+      const json = await res.json();
+      const cfg = json.data || {};
+      document.getElementById("dayStart").value = cfg.dayStart || "07:00";
+      document.getElementById("dayEnd").value = cfg.dayEnd || "19:00";
+      document.getElementById("nightStart").value = cfg.nightStart || "19:00";
+      document.getElementById("nightEnd").value = cfg.nightEnd || "07:00";
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function saveShifts() {
+    const body = {
+      dayStart: document.getElementById("dayStart").value,
+      dayEnd: document.getElementById("dayEnd").value,
+      nightStart: document.getElementById("nightStart").value,
+      nightEnd: document.getElementById("nightEnd").value
+    };
+
+    const res = await fetch(API + "/api/shifts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const json = await res.json();
+    if (!json.ok) {
+      alert(json.error || "Vardiya saatleri kaydedilemedi.");
+    } else {
+      alert("Vardiya saatleri kaydedildi.");
+    }
+  }
+
+  // ------- SOL LİSTE – TODAY SCANS -------
+  function updateSelectedCardsUI() {
+    const cards = document.querySelectorAll(".person-card");
+    cards.forEach(card => {
+      const pid = Number(card.dataset.personId);
+      if (pid === selectedPersonId) {
+        card.classList.add("selected");
+      } else {
+        card.classList.remove("selected");
+      }
+    });
+
+    const lbl = document.getElementById("selectedPersonLabel");
+    if (selectedPersonName) {
+      lbl.textContent = selectedPersonName;
+    } else {
+      lbl.textContent = "(yok)";
+    }
+  }
+
   async function loadScans() {
     const res = await fetch(API + "/api/today-scans");
     const json = await res.json();
@@ -767,12 +923,17 @@
 
     if (!json.data || json.data.length === 0) {
       div.innerHTML = "Bugün kart okutan personel yok.";
+      selectedPersonId = null;
+      selectedPersonName = null;
+      updateSelectedCardsUI();
       return;
     }
 
     json.data.forEach(p => {
       const card = document.createElement("div");
       card.className = "person-card";
+      card.dataset.personId = p.personId;
+      card.dataset.fullName = p.fullName;
 
       const giris = formatTimeTR(p.firstScanAt);
       const cikis = p.hasExit ? `<span class="exit-time">${formatTimeTR(p.lastScanAt)}</span>`
@@ -789,8 +950,16 @@
         </div>
       `;
 
+      card.addEventListener("click", () => {
+        selectedPersonId = p.personId;
+        selectedPersonName = p.fullName;
+        updateSelectedCardsUI();
+      });
+
       div.appendChild(card);
     });
+
+    updateSelectedCardsUI();
   }
 
   // ------- ASSIGN JOB -------
@@ -799,18 +968,8 @@
     const startTime = `${todayISODate()}T${document.getElementById("startTime").value}:00`;
     const endTime = `${todayISODate()}T${document.getElementById("endTime").value}:00`;
 
-    // Soldaki ilk kartı otomatik seçiyoruz
-    const scanCards = document.querySelectorAll(".person-card");
-    if (scanCards.length === 0) {
-      alert("Bugün kart okutan kimse yok.");
-      return;
-    }
-
-    const firstName = scanCards[0].querySelector("strong").innerText;
-    const person = await findPersonByName(firstName);
-
-    if (!person) {
-      alert("Personel bulunamadı!");
+    if (!selectedPersonId) {
+      alert("Lütfen soldan bir personel seçin.");
       return;
     }
 
@@ -818,7 +977,7 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        personId: person.id,
+        personId: selectedPersonId,
         jobName,
         startTime,
         endTime
@@ -832,13 +991,6 @@
       alert("İş ataması yapıldı!");
       loadTodayAssignments();
     }
-  }
-
-  // ------- FIND PERSON -------
-  async function findPersonByName(full) {
-    const res = await fetch(API + "/api/persons");
-    const json = await res.json();
-    return (json.data || []).find(p => (p.firstName + " " + p.lastName) === full);
   }
 
   // ------- LOAD TODAY ASSIGNMENTS -------
@@ -864,29 +1016,117 @@
 
   // ------- TIMELINE PAGE -------
   async function loadTimeline() {
-    const res = await fetch(API + "/api/today-scans");
+    const dateInput = document.getElementById("reportDate");
+    if (!dateInput.value) dateInput.value = todayISODate();
+    const date = dateInput.value;
+    const shiftFilter = document.getElementById("shiftFilter").value || "all";
+
+    const res = await fetch(API + "/api/report?date=" + encodeURIComponent(date));
     const json = await res.json();
+    lastReportData = json;
+
+    const summary = json.summary || {};
+    const summaryEl = document.getElementById("timelineSummary");
+    summaryEl.textContent =
+      `Toplam personel: ${summary.totalPersons || 0} • ` +
+      `Sabah: ${summary.dayCount || 0} • ` +
+      `Akşam: ${summary.nightCount || 0} • ` +
+      `Çıkış yapmayan: ${summary.noExitCount || 0} • ` +
+      `Toplam okutma: ${summary.totalScans || 0}`;
+
     const body = document.getElementById("timelineBody");
     body.innerHTML = "";
 
-    if (!json.data || json.data.length === 0) {
+    const allRows = json.rows || [];
+    const rows = allRows.filter(r => {
+      if (shiftFilter === "all") return true;
+      return r.shift === shiftFilter;
+    });
+
+    if (rows.length === 0) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="5">Bugün için kayıt yok.</td>`;
+      tr.innerHTML = `<td colspan="7">${date} tarihi için kayıt yok.</td>`;
       body.appendChild(tr);
       return;
     }
 
-    json.data.forEach(p => {
+    rows.forEach(r => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${p.fullName}</td>
-        <td>${p.role}</td>
-        <td>${formatTimeTR(p.firstScanAt)}</td>
-        <td>${p.hasExit ? formatTimeTR(p.lastScanAt) : "-"}</td>
-        <td>${p.scanCount || 1}</td>
+        <td>${r.fullName}</td>
+        <td>${r.role}</td>
+        <td>${r.shift}</td>
+        <td>${formatTimeTR(r.firstScanAt)}</td>
+        <td>${r.hasExit ? formatTimeTR(r.lastScanAt) : "-"}</td>
+        <td>${r.scanCount}</td>
+        <td>${formatDuration(r.workMinutes)}</td>
       `;
       body.appendChild(tr);
     });
+  }
+
+  // ------- Excel (CSV) EXPORT -------
+  function exportReportCsv() {
+    if (!lastReportData) {
+      alert("Önce listeyi yükleyin (Zaman Çizelgesi sayfasında).");
+      return;
+    }
+
+    const date = document.getElementById("reportDate").value || todayISODate();
+    const rows = lastReportData.rows || [];
+    if (!rows.length) {
+      alert("Bu tarih için rapor verisi yok.");
+      return;
+    }
+
+    const header = [
+      "Personel",
+      "Kart UID",
+      "Rol",
+      "Giriş Saati",
+      "Çıkış Saati",
+      "Vardiya",
+      "Çalışma Süresi",
+      "Okutma Sayısı"
+    ];
+
+    const csvRows = [header];
+
+    rows.forEach(r => {
+      const row = [
+        r.fullName || "",
+        r.cardUid || "",
+        r.role || "",
+        formatTimeTR(r.firstScanAt),
+        r.hasExit ? formatTimeTR(r.lastScanAt) : "",
+        r.shift || "",
+        formatDuration(r.workMinutes),
+        String(r.scanCount || 0)
+      ];
+      csvRows.push(row);
+    });
+
+    const csvString = csvRows
+      .map(cols =>
+        cols
+          .map(v => {
+            const s = String(v || "");
+            const escaped = s.replace(/"/g, '""');
+            return `"${escaped}"`;
+          })
+          .join(";")
+      )
+      .join("\r\n");
+
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tevzi-report-${date}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   // ------- LOGS PAGE -------
@@ -942,6 +1182,8 @@
 
   // ---- İlk yükleme ----
   (function init() {
+    const dateInput = document.getElementById("reportDate");
+    if (dateInput) dateInput.value = todayISODate();
     loadJobs();
     loadScans();
     loadTodayAssignments();
