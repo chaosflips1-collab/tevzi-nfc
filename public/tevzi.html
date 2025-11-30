@@ -160,8 +160,8 @@
 
 <script>
 
-// SUNUCU URL
-const API = "";
+// 🔥 TEK DEĞİŞİKLİK — API ARTIK DOLU 🔥
+const API = "https://tevzi-nfc-production.up.railway.app";
 
 // ------- JOB LIST LOAD -------
 async function loadJobs() {
@@ -178,7 +178,7 @@ async function loadJobs() {
   });
 }
 
-// ------- LOAD TODAY SCANS (GİRİŞ - ÇIKIŞ) -------
+// ------- LOAD TODAY SCANS -------
 async function loadScans() {
   const res = await fetch(API + "/api/today-scans");
   const json = await res.json();
@@ -219,7 +219,6 @@ async function assignJob() {
   const startTime = `${today()}T${document.getElementById("startTime").value}:00`;
   const endTime = `${today()}T${document.getElementById("endTime").value}:00`;
 
-  // Soldaki ilk adamı otomatik seçiyoruz
   const scanCards = document.querySelectorAll(".person-card");
   if (scanCards.length === 0) {
     alert("Bugün kart okutan kimse yok.");
@@ -283,15 +282,12 @@ async function loadTodayAssignments() {
   });
 }
 
-// TODAY FORMAT
 function today() {
   return new Date().toISOString().slice(0,10);
 }
 
-// AUTO REFRESH
 setInterval(() => loadScans(), 4000);
 
-// INITIAL LOAD
 loadJobs();
 loadScans();
 loadTodayAssignments();
