@@ -7,33 +7,26 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ------------------ MIDDLEWARES ------------------
+// Middlewares
 app.use(cors());
+app.use(express.json());
 
-// Android body parsing sorunlarını tamamen çözmek için:
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// ------------------ ROOT ROUTE ------------------
+// Root route → ana panel
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tevzi.html'));
 });
 
-// ------------------ DEMO PERSONS ------------------
+// Demo persons (şimdilik sabit)
 const persons = [
-  {
-    id: 1,
-    firstName: 'Okan',
-    lastName: 'Yucel',
-    role: 'Puantör',
-    cardUid: '613D8D24'   // ✔ SENİN GERÇEK NFC KART UID'İN
-  }
+  { id: 1, firstName: 'Test',       lastName: 'Person', role: 'Usta',       cardUid: '613D8D24' },
+  { id: 2, firstName: 'Ahmet Seyfi', lastName: 'Yüksel', role: 'Depocu',    cardUid: 'CARD_AHMET' },
+  { id: 3, firstName: 'Zeki Okan',   lastName: 'Kaya',   role: 'Boru Ustası', cardUid: 'CARD_ZEKI' }
 ];
 
-
+// NFC okutma logları (RAM’de)
 const nfcScans = [];
 
-// ------------------ FILE SYSTEM ------------------
+// DATA FILES
 const DATA_DIR = path.join(__dirname, 'data');
 const ASSIGN_FILE = path.join(DATA_DIR, 'assignments.json');
 const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
@@ -41,15 +34,19 @@ const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
 if (!fs.existsSync(ASSIGN_FILE)) fs.writeFileSync(ASSIGN_FILE, '[]');
-
-if (!fs.existsSync(JOBS_FILE)) {
-  fs.writeFileSync(JOBS_FILE, JSON.stringify([
-    "Çelik Montaj 3. Kat",
-    "Makine Bakım - Hat 2",
-    "Muhtelif Boru Donatım İşleri",
-    "Depo Düzenleme"
-  ], null, 2));
-}
+if (!fs.existsSync(JOBS_FILE)) fs.writeFileSync(
+  JOBS_FILE,
+  JSON.stringify(
+    [
+      'Çelik Montaj 3. Kat',
+      'Makine Bakım - Hat 2',
+      'Muhtelif Boru Donatım İşleri',
+      'Depo Düzenleme'
+    ],
+    null,
+    2
+  )
+);
 
 const readAssignments = () => JSON.parse(fs.readFileSync(ASSIGN_FILE));
 const writeAssignments = (v) => fs.writeFileSync(ASSIGN_FILE, JSON.stringify(v, null, 2));
@@ -57,18 +54,19 @@ const writeAssignments = (v) => fs.writeFileSync(ASSIGN_FILE, JSON.stringify(v, 
 const readJobs = () => JSON.parse(fs.readFileSync(JOBS_FILE));
 const writeJobs = (v) => fs.writeFileSync(JOBS_FILE, JSON.stringify(v, null, 2));
 
+// Bugünün UTC tarihi (yyyy-mm-dd)
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// ------------------ API'LER ------------------
+// ---------------- API'LER --------------------
 
-// TEST ENDPOINT
+// Test endpoint
 app.get('/api/hello', (req, res) => {
-  res.json({ ok: true, msg: "Tevzi NFC server çalışıyor." });
+  res.json({ ok: true, msg: 'Tevzi NFC server çalışıyor.' });
 });
 
-// JOBS LIST
+// JOBS
 app.get('/api/jobs', (req, res) => {
   res.json({ ok: true, data: readJobs() });
 });
@@ -84,39 +82,43 @@ app.post('/api/jobs', (req, res) => {
   res.json({ ok: true, data: jobs });
 });
 
-// ------------------ NFC SCAN ------------------
+// NFC scan (giriş & çıkış – ham log tutuluyor)
 app.post('/api/nfc-scan', (req, res) => {
-  console.log("Gelen NFC body:", req.body);
-
   const { cardUid, scannedAt } = req.body;
 
-  if (!cardUid || !scannedAt)
-    return res.status(400).json({ ok: false, error: "Eksik parametre" });
+  if (!cardUid || !scannedAt) {
+    return res.status(400).json({ ok: false, error: 'Eksik parametre' });
+  }
 
-  const person = persons.find(p => p.cardUid === cardUid);
-  if (!person)
-    return res.status(404).json({ ok: false, error: "Bu kart kime ait bilinmiyor" });
+  const person = persons.find((p) => p.cardUid === cardUid);
+  if (!person) {
+    return res.status(404).json({ ok: false, error: 'Bu kart kime ait bilinmiyor' });
+  }
 
   const scan = {
     id: nfcScans.length + 1,
     personId: person.id,
     cardUid,
-    scannedAt
+    scannedAt // ISO (genelde UTC) – panelde lokal saate çevireceğiz
   };
 
   nfcScans.push(scan);
 
+  console.log('Gelen NFC body:', { cardUid, scannedAt });
+
   res.json({ ok: true, person, scan });
 });
 
-// ------------------ TODAY SCANS ------------------
+// Bugünkü özet (giriş-çıkış) – zaman çizelgesi + soldaki kart listesi bunu kullanıyor
 app.get('/api/today-scans', (req, res) => {
   const t = todayStr();
 
-  const today = nfcScans.filter(s => s.scannedAt.startsWith(t));
+  // Bugünkü tüm okutmalar (UTC güne göre)
+  const today = nfcScans.filter((s) => s.scannedAt.startsWith(t));
 
+  // Kişi kişi gruplama
   const map = {};
-  today.forEach(s => {
+  today.forEach((s) => {
     if (!map[s.personId]) {
       map[s.personId] = {
         firstScanAt: s.scannedAt,
@@ -134,52 +136,76 @@ app.get('/api/today-scans', (req, res) => {
     }
   });
 
-  const out = Object.entries(map).map(([personId, info]) => {
-    const p = persons.find(x => x.id === Number(personId));
-    if (!p) return null;
+  const out = Object.entries(map)
+    .map(([personId, info]) => {
+      const p = persons.find((x) => x.id === Number(personId));
+      if (!p) return null;
 
-    return {
-      personId: p.id,
-      fullName: `${p.firstName} ${p.lastName}`,
-      role: p.role,
-      firstScanAt: info.firstScanAt,
-      lastScanAt: info.lastScanAt,
-      hasExit: info.scanCount > 1
-    };
-  }).filter(Boolean);
+      return {
+        personId: p.id,
+        fullName: `${p.firstName} ${p.lastName}`,
+        role: p.role,
+        firstScanAt: info.firstScanAt, // giriş (UTC ISO)
+        lastScanAt: info.lastScanAt, // çıkış (UTC ISO)
+        hasExit: info.scanCount > 1,
+        scanCount: info.scanCount
+      };
+    })
+    .filter(Boolean);
 
   res.json({ ok: true, data: out });
 });
 
-// PERSON LIST
+// Ham NFC logları (tüm okutmalar sıralı)
+app.get('/api/nfc-logs', (req, res) => {
+  const data = nfcScans.map((s) => {
+    const p = persons.find((x) => x.id === s.personId);
+    return {
+      id: s.id,
+      cardUid: s.cardUid,
+      scannedAt: s.scannedAt,
+      personId: s.personId,
+      fullName: p ? `${p.firstName} ${p.lastName}` : null,
+      role: p ? p.role : null
+    };
+  });
+
+  res.json({ ok: true, data });
+});
+
+// Persons
 app.get('/api/persons', (req, res) => {
   res.json({ ok: true, data: persons });
 });
 
-// ------------------ ASSIGN JOB ------------------
+// Assign
 app.post('/api/assign', (req, res) => {
   let { personId, jobName, startTime, endTime } = req.body;
   personId = Number(personId);
 
-  if (!personId || !jobName || !startTime || !endTime)
-    return res.status(400).json({ ok: false, error: "Eksik parametre" });
+  if (!personId || !jobName || !startTime || !endTime) {
+    return res.status(400).json({ ok: false, error: 'Eksik parametre' });
+  }
 
-  const person = persons.find(p => p.id === personId);
-  if (!person)
-    return res.status(404).json({ ok: false, error: "Personel yok" });
+  const person = persons.find((p) => p.id === personId);
+  if (!person) {
+    return res.status(404).json({ ok: false, error: 'Personel yok' });
+  }
 
   const today = todayStr();
   const assigns = readAssignments();
 
-  const already = assigns.some(a =>
-    a.personId === personId &&
-    a.startTime.startsWith(today)
+  const already = assigns.some(
+    (a) => a.personId === personId && a.startTime.startsWith(today)
   );
 
-  if (already)
-    return res.status(409).json({ ok: false, error: "Bugün zaten iş atanmış" });
+  if (already) {
+    return res
+      .status(409)
+      .json({ ok: false, error: 'Bugün zaten iş atanmış' });
+  }
 
-  const nextId = assigns.length ? Math.max(...assigns.map(x => x.id)) + 1 : 1;
+  const nextId = assigns.length ? Math.max(...assigns.map((x) => x.id)) + 1 : 1;
 
   const newObj = {
     id: nextId,
@@ -197,28 +223,30 @@ app.post('/api/assign', (req, res) => {
   res.json({ ok: true, assignment: newObj });
 });
 
-// TODAY ASSIGNMENTS
+// Today's assignments
 app.get('/api/assignments/today', (req, res) => {
   const today = todayStr();
-  const assigns = readAssignments()
-    .filter(a => a.startTime.startsWith(today));
+  const assigns = readAssignments().filter((a) =>
+    a.startTime.startsWith(today)
+  );
 
   res.json({ ok: true, data: assigns });
 });
 
-// FULL REPORT
+// Full report (seçili tarih)
 app.get('/api/assignments', (req, res) => {
   const date = (req.query.date || todayStr()).slice(0, 10);
-  const assigns = readAssignments()
-    .filter(a => a.startTime.startsWith(date));
+  const assigns = readAssignments().filter((a) =>
+    a.startTime.startsWith(date)
+  );
 
   res.json({ ok: true, data: assigns });
 });
 
-// ------------------ STATIC FILES ------------------
+// Static
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ------------------ START SERVER ------------------
+// Start
 app.listen(PORT, () => {
-  console.log("Server çalışıyor → PORT:", PORT);
+  console.log('Server çalışıyor → PORT:', PORT);
 });

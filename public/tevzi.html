@@ -1,298 +1,951 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<title>Tevzi İş Atama</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f8f8f8;
-    display: flex;
-    height: 100vh;
-  }
+  <meta charset="UTF-8" />
+  <title>Tevzi İş Atama Paneli</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  /* LEFT */
-  .left {
-    width: 28%;
-    background: #ffffff;
-    border-right: 1px solid #ddd;
-    padding: 16px;
-    overflow-y: auto;
-  }
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --accent: #4f46e5;
+      --accent-soft: rgba(79,70,229,0.15);
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --card: #ffffff;
+    }
 
-  .left h2 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 20px;
-  }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  .person-card {
-    padding: 12px;
-    margin-bottom: 10px;
-    background: #f2f6ff;
-    border-radius: 8px;
-    border-left: 4px solid #4f73ff;
-  }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
 
-  .time-box {
-    font-size: 14px;
-    color: #555;
-    margin-top: 4px;
-  }
+    .app {
+      display: flex;
+      height: 100vh;
+    }
 
-  .exit-time {
-    color: #d13a3a;
-    font-weight: bold;
-  }
+    /* SIDEBAR */
 
-  /* RIGHT */
-  .right {
-    width: 72%;
-    padding: 20px;
-    overflow-y: auto;
-  }
+    .sidebar {
+      width: 260px;
+      background: radial-gradient(circle at top left, #1e293b 0, #020617 55%, #000 100%);
+      color: #e5e7eb;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-  h1 {
-    margin-top: 0;
-  }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+    }
 
-  select, button, input {
-    padding: 8px;
-    font-size: 14px;
-    margin: 4px 0;
-  }
+    .logo-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4f46e5, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: #fff;
+    }
 
-  .row {
-    display: flex;
-    gap: 12px;
-  }
+    .sidebar-title {
+      display: flex;
+      flex-direction: column;
+    }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 18px;
-    font-size: 14px;
-  }
+    .sidebar-title span:first-child {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #9ca3af;
+    }
 
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-  }
+    .sidebar-title span:last-child {
+      font-size: 17px;
+      font-weight: 600;
+    }
 
-  th {
-    background: #f1f1f1;
-  }
+    .nav-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: #6b7280;
+      padding: 0 8px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
 
-  .assign-btn {
-    background: #4f73ff;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-  .assign-btn:hover {
-    background: #3f63ee;
-  }
+    .nav-item {
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: #e5e7eb;
+      font-size: 14px;
+      transition: background .18s, color .18s, transform .08s;
+    }
 
-</style>
+    .nav-item:hover {
+      background: rgba(148, 163, 184, 0.18);
+      transform: translateX(2px);
+    }
+
+    .nav-item.active {
+      background: var(--accent-soft);
+      color: #e5e7eb;
+      border: 1px solid rgba(129, 140, 248, 0.7);
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: rgba(15,23,42,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .nav-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: #6b7280;
+      padding: 0 8px;
+    }
+
+    /* MAIN */
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #ffffffcc;
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .main-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .main-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(79,70,229,0.06);
+      color: #4f46e5;
+      border: 1px solid rgba(79,70,229,0.18);
+    }
+
+    .main-body {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 20px 20px;
+    }
+
+    .page {
+      display: none;
+      height: 100%;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    /* ASSIGN LAYOUT */
+
+    .assign-layout {
+      display: flex;
+      height: calc(100vh - 80px);
+      gap: 16px;
+    }
+
+    .left-column {
+      width: 32%;
+      min-width: 260px;
+      background: #f9fafb;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .left-column h2 {
+      margin-bottom: 6px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .left-column-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    #scanList {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .person-card {
+      padding: 10px 10px 9px;
+      margin-bottom: 8px;
+      background: #eef2ff;
+      border-radius: 10px;
+      border-left: 3px solid var(--accent);
+      font-size: 13px;
+    }
+
+    .person-card strong {
+      font-size: 14px;
+    }
+
+    .time-box {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+
+    .exit-time {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .right-column {
+      flex: 1;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    select,
+    button,
+    input {
+      padding: 8px 9px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    select:focus,
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(79,70,229,0.35);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .row > div {
+      min-width: 150px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 9px 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .assign-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .assign-btn.secondary {
+      background: #4b5563;
+    }
+
+    .assign-btn:hover {
+      opacity: 0.95;
+    }
+
+    /* GENERIC CARDS / SECTIONS */
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px 16px 16px;
+      margin-bottom: 16px;
+    }
+
+    .input-inline {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      font-size: 11px;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+
+    .pill span {
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    @media (max-width: 960px) {
+      .sidebar {
+        display: none;
+      }
+
+      .assign-layout {
+        height: auto;
+        flex-direction: column;
+      }
+
+      body,
+      .app,
+      .main {
+        height: auto;
+      }
+
+      .main-body {
+        height: auto;
+        overflow: visible;
+      }
+    }
+  </style>
 </head>
+
 <body>
+<div class="app">
 
-<!-- LEFT SIDE -->
-<div class="left">
-  <h2>Kart Okutan Personeller</h2>
-  <div id="scanList">Yükleniyor...</div>
-</div>
-
-<!-- RIGHT SIDE -->
-<div class="right">
-  <h1>Tevzi İş Atama</h1>
-
-  <div class="row">
-    <div style="flex: 1;">
-      <label>İş / Proje</label><br>
-      <select id="jobSelect"></select>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-badge">T</div>
+      <div class="sidebar-title">
+        <span>Tevzi NFC</span>
+        <span>İş Takip Paneli</span>
+      </div>
     </div>
 
     <div>
-      <label>İş Başlangıç Saati</label><br>
-      <select id="startTime">
-        <option>07:00</option>
-        <option>08:00</option>
-        <option>09:00</option>
-        <option>10:00</option>
-        <option>11:00</option>
-      </select>
+      <div class="nav-section-label">PANEL</div>
+      <ul class="nav-list">
+        <li class="nav-item active" data-page="assign">
+          <div class="nav-icon">🗂</div>
+          <span>İş Atama</span>
+        </li>
+        <li class="nav-item" data-page="timeline">
+          <div class="nav-icon">⏱</div>
+          <span>Zaman Çizelgesi</span>
+        </li>
+        <li class="nav-item" data-page="logs">
+          <div class="nav-icon">📡</div>
+          <span>NFC Logları</span>
+        </li>
+        <li class="nav-item" data-page="people">
+          <div class="nav-icon">👷</div>
+          <span>Personel Yönetimi</span>
+        </li>
+      </ul>
+
+      <div class="nav-section-label" style="margin-top:12px;">YÖNETİM</div>
+      <ul class="nav-list">
+        <li class="nav-item" data-page="settings">
+          <div class="nav-icon">⚙️</div>
+          <span>Ayarlar</span>
+        </li>
+      </ul>
     </div>
 
-    <div>
-      <label>İş Bitiş Saati</label><br>
-      <select id="endTime">
-        <option>17:00</option>
-        <option>18:00</option>
-        <option>19:00</option>
-      </select>
+    <div class="nav-footer">
+      <div>Bugünkü okutmalar anlık güncellenir.</div>
+      <div style="margin-top:4px;">Saatler panelde <strong>TR saati</strong> ile gösterilir.</div>
     </div>
-  </div>
+  </aside>
 
-  <button class="assign-btn" onclick="assignJob()">İş Ata</button>
-  <button class="assign-btn" style="background:#555" onclick="loadTodayAssignments()">Listeleri Yenile</button>
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title">Tevzi İş Atama Paneli</div>
+        <div class="main-sub">Kart okutma, iş atama ve günlük zaman çizelgesi tek ekranda.</div>
+      </div>
+      <div class="tag" id="clockTag">—</div>
+    </div>
 
-  <h2>Bugünkü İş Atamaları</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Personel</th>
-        <th>Görev</th>
-        <th>İş</th>
-        <th>Başlangıç</th>
-        <th>Bitiş</th>
-      </tr>
-    </thead>
-    <tbody id="assignmentsBody"></tbody>
-  </table>
+    <div class="main-body">
+
+      <!-- PAGE: ASSIGN -->
+      <section class="page active" id="page-assign">
+        <div class="assign-layout">
+
+          <!-- LEFT COLUMN -->
+          <div class="left-column">
+            <h2>Kart Okutan Personeller</h2>
+            <div class="left-column-sub">
+              NFC ile okutan personellerin giriş-çıkışları anlık listelenir.
+            </div>
+            <div id="scanList">Yükleniyor...</div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="right-column">
+            <h1>Tevzi İş Atama</h1>
+
+            <div class="row">
+              <div style="flex:1;">
+                <label>İş / Proje</label><br>
+                <select id="jobSelect"></select>
+              </div>
+
+              <div>
+                <label>İş Başlangıç Saati</label><br>
+                <select id="startTime">
+                  <option>07:00</option>
+                  <option>08:00</option>
+                  <option>09:00</option>
+                  <option>10:00</option>
+                  <option>11:00</option>
+                </select>
+              </div>
+
+              <div>
+                <label>İş Bitiş Saati</label><br>
+                <select id="endTime">
+                  <option>17:00</option>
+                  <option>18:00</option>
+                  <option>19:00</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+              <button class="assign-btn" onclick="assignJob()">İş Ata</button>
+              <button class="assign-btn secondary" onclick="loadTodayAssignments()">Listeleri Yenile</button>
+            </div>
+
+            <h2 style="margin-top:4px;">Bugünkü İş Atamaları</h2>
+            <table>
+              <thead>
+              <tr>
+                <th>Personel</th>
+                <th>Görev</th>
+                <th>İş</th>
+                <th>Başlangıç</th>
+                <th>Bitiş</th>
+              </tr>
+              </thead>
+              <tbody id="assignmentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: TIMELINE -->
+      <section class="page" id="page-timeline">
+        <div class="card">
+          <div class="section-title">Günlük Zaman Çizelgesi</div>
+          <div class="section-sub">
+            Bugün kart okutan personellerin ilk ve son okutma saatleri. Saatler TR saatine göre gösterilir.
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>Personel</th>
+              <th>Görev</th>
+              <th>İlk Okutma</th>
+              <th>Son Okutma</th>
+              <th>Toplam Okutma</th>
+            </tr>
+            </thead>
+            <tbody id="timelineBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE: LOGS -->
+      <section class="page" id="page-logs">
+        <div class="card">
+          <div class="section-title">NFC Logları</div>
+          <div class="section-sub">
+            Tüm okutmalar (sadece bugünün değil, sunucu yeniden başlayana kadar) kronolojik olarak listelenir.
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Personel</th>
+              <th>Görev</th>
+              <th>Kart UID</th>
+              <th>Okutma Zamanı</th>
+            </tr>
+            </thead>
+            <tbody id="logsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE: PEOPLE -->
+      <section class="page" id="page-people">
+        <div class="card">
+          <div class="section-title">Personel Yönetimi</div>
+          <div class="section-sub">
+            Şimdilik sadece görüntüleme modunda. Daha sonra buraya personel ekleme / kart eşleştirme ekranlarını koyarız.
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ad Soyad</th>
+              <th>Görev</th>
+              <th>Kart UID</th>
+            </tr>
+            </thead>
+            <tbody id="peopleBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- PAGE: SETTINGS -->
+      <section class="page" id="page-settings">
+        <div class="card">
+          <div class="section-title">İş / Proje Ayarları</div>
+          <div class="section-sub">
+            Buradan iş/proje listesini yönetebilirsin. Eklediğin işler otomatik olarak İş Atama ekranındaki listeye düşer.
+          </div>
+          <label>Yeni iş / proje adı</label>
+          <div class="input-inline">
+            <input id="newJobName" type="text" placeholder="Örn: Vinç Bakım - Güverte 2" style="flex:1;">
+            <button class="assign-btn" onclick="addJob()">Ekle</button>
+          </div>
+
+          <div style="margin-top:12px; font-size:12px; color:var(--muted);">
+            Mevcut işler:
+          </div>
+          <div id="jobsPills" style="margin-top:6px;"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
 </div>
 
 <script>
+  // Base URL (aynı domen kullanıyoruz)
+  const API = "";
 
-// 🔥 TEK DEĞİŞİKLİK — API ARTIK DOLU 🔥
-const API = "https://tevzi-nfc-production.up.railway.app";
-
-// ------- JOB LIST LOAD -------
-async function loadJobs() {
-  const res = await fetch(API + "/api/jobs");
-  const json = await res.json();
-  const sel = document.getElementById("jobSelect");
-
-  sel.innerHTML = "";
-  json.data.forEach(job => {
-    const opt = document.createElement("option");
-    opt.value = job;
-    opt.textContent = job;
-    sel.appendChild(opt);
-  });
-}
-
-// ------- LOAD TODAY SCANS -------
-async function loadScans() {
-  const res = await fetch(API + "/api/today-scans");
-  const json = await res.json();
-
-  const div = document.getElementById("scanList");
-  div.innerHTML = "";
-
-  if (json.data.length === 0) {
-    div.innerHTML = "Bugün kart okutan personel yok.";
-    return;
+  // ---- Saat formatı: TR saati (UTC → +3) ----
+  function formatTimeTR(isoString) {
+    if (!isoString) return "-";
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleTimeString("tr-TR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
   }
 
-  json.data.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "person-card";
-
-    card.innerHTML = `
-      <strong>${p.fullName}</strong><br>
-      <span>${p.role}</span>
-      <div class="time-box">
-        ➤ Giriş: <strong>${p.firstScanAt.slice(11,16)}</strong>
-      </div>
-      <div class="time-box">
-        ➤ Çıkış: 
-        ${p.hasExit 
-          ? `<span class="exit-time">${p.lastScanAt.slice(11,16)}</span>` 
-          : `<span style="color:#777">(henüz çıkmadı)</span>`}
-      </div>
-    `;
-
-    div.appendChild(card);
-  });
-}
-
-// ------- ASSIGN JOB -------
-async function assignJob() {
-  const jobName = document.getElementById("jobSelect").value;
-  const startTime = `${today()}T${document.getElementById("startTime").value}:00`;
-  const endTime = `${today()}T${document.getElementById("endTime").value}:00`;
-
-  const scanCards = document.querySelectorAll(".person-card");
-  if (scanCards.length === 0) {
-    alert("Bugün kart okutan kimse yok.");
-    return;
+  function todayISODate() {
+    return new Date().toISOString().slice(0, 10);
   }
 
-  const firstName = scanCards[0].querySelector("strong").innerText;
-  const person = await findPersonByName(firstName);
+  // ---- Menü navigasyonu ----
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+      item.classList.add("active");
 
-  if (!person) {
-    alert("Personel bulunamadı!");
-    return;
-  }
+      const page = item.getAttribute("data-page");
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById("page-" + page).classList.add("active");
 
-  const res = await fetch(API + "/api/assign", {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({
-      personId: person.id,
-      jobName,
-      startTime,
-      endTime
-    })
+      // Sayfa özel yüklemeler
+      if (page === "assign") {
+        loadJobs();
+        loadScans();
+        loadTodayAssignments();
+      } else if (page === "timeline") {
+        loadTimeline();
+      } else if (page === "logs") {
+        loadLogs();
+      } else if (page === "people") {
+        loadPeople();
+      } else if (page === "settings") {
+        loadJobsForSettings();
+      }
+    });
   });
 
-  const json = await res.json();
-  if (!json.ok) {
-    alert(json.error);
-  } else {
-    alert("İş ataması yapıldı!");
+  // Header saat etiketi
+  setInterval(() => {
+    const now = new Date();
+    const s = now.toLocaleString("tr-TR", {
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+    document.getElementById("clockTag").textContent = "TR zamanı: " + s;
+  }, 1000);
+
+  // ------- JOB LIST LOAD -------
+  async function loadJobs() {
+    const res = await fetch(API + "/api/jobs");
+    const json = await res.json();
+    const sel = document.getElementById("jobSelect");
+    sel.innerHTML = "";
+    (json.data || []).forEach(job => {
+      const opt = document.createElement("option");
+      opt.value = job;
+      opt.textContent = job;
+      sel.appendChild(opt);
+    });
+    // Ayarlar sayfasındaki pill'leri de güncelle
+    renderJobsPills(json.data || []);
+  }
+
+  async function loadJobsForSettings() {
+    const res = await fetch(API + "/api/jobs");
+    const json = await res.json();
+    renderJobsPills(json.data || []);
+  }
+
+  function renderJobsPills(jobs) {
+    const container = document.getElementById("jobsPills");
+    if (!container) return;
+    container.innerHTML = "";
+    jobs.forEach(j => {
+      const div = document.createElement("div");
+      div.className = "pill";
+      div.innerHTML = `<span>●</span>${j}`;
+      container.appendChild(div);
+    });
+  }
+
+  async function addJob() {
+    const input = document.getElementById("newJobName");
+    const name = (input.value || "").trim();
+    if (!name) {
+      alert("Lütfen iş / proje adını yaz.");
+      return;
+    }
+
+    const res = await fetch(API + "/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobName: name })
+    });
+
+    const json = await res.json();
+    if (!json.ok) {
+      alert(json.error || "İş eklenirken hata oluştu.");
+    } else {
+      input.value = "";
+      loadJobs();
+      alert("İş / proje listeye eklendi.");
+    }
+  }
+
+  // ------- LOAD TODAY SCANS (sol kart listesi) -------
+  async function loadScans() {
+    const res = await fetch(API + "/api/today-scans");
+    const json = await res.json();
+
+    const div = document.getElementById("scanList");
+    div.innerHTML = "";
+
+    if (!json.data || json.data.length === 0) {
+      div.innerHTML = "Bugün kart okutan personel yok.";
+      return;
+    }
+
+    json.data.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "person-card";
+
+      const giris = formatTimeTR(p.firstScanAt);
+      const cikis = p.hasExit ? `<span class="exit-time">${formatTimeTR(p.lastScanAt)}</span>`
+                              : `<span style="color:#777">(henüz çıkmadı)</span>`;
+
+      card.innerHTML = `
+        <strong>${p.fullName}</strong><br>
+        <span>${p.role}</span>
+        <div class="time-box">
+          ➤ Giriş: <strong>${giris}</strong>
+        </div>
+        <div class="time-box">
+          ➤ Çıkış: ${cikis}
+        </div>
+      `;
+
+      div.appendChild(card);
+    });
+  }
+
+  // ------- ASSIGN JOB -------
+  async function assignJob() {
+    const jobName = document.getElementById("jobSelect").value;
+    const startTime = `${todayISODate()}T${document.getElementById("startTime").value}:00`;
+    const endTime = `${todayISODate()}T${document.getElementById("endTime").value}:00`;
+
+    // Soldaki ilk kartı otomatik seçiyoruz
+    const scanCards = document.querySelectorAll(".person-card");
+    if (scanCards.length === 0) {
+      alert("Bugün kart okutan kimse yok.");
+      return;
+    }
+
+    const firstName = scanCards[0].querySelector("strong").innerText;
+    const person = await findPersonByName(firstName);
+
+    if (!person) {
+      alert("Personel bulunamadı!");
+      return;
+    }
+
+    const res = await fetch(API + "/api/assign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        personId: person.id,
+        jobName,
+        startTime,
+        endTime
+      })
+    });
+
+    const json = await res.json();
+    if (!json.ok) {
+      alert(json.error || "İş atamasında hata oluştu.");
+    } else {
+      alert("İş ataması yapıldı!");
+      loadTodayAssignments();
+    }
+  }
+
+  // ------- FIND PERSON -------
+  async function findPersonByName(full) {
+    const res = await fetch(API + "/api/persons");
+    const json = await res.json();
+    return (json.data || []).find(p => (p.firstName + " " + p.lastName) === full);
+  }
+
+  // ------- LOAD TODAY ASSIGNMENTS -------
+  async function loadTodayAssignments() {
+    const res = await fetch(API + "/api/assignments/today");
+    const json = await res.json();
+
+    const body = document.getElementById("assignmentsBody");
+    body.innerHTML = "";
+
+    (json.data || []).forEach(a => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${a.fullName}</td>
+        <td>${a.role}</td>
+        <td>${a.jobName}</td>
+        <td>${formatTimeTR(a.startTime)}</td>
+        <td>${formatTimeTR(a.endTime)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  // ------- TIMELINE PAGE -------
+  async function loadTimeline() {
+    const res = await fetch(API + "/api/today-scans");
+    const json = await res.json();
+    const body = document.getElementById("timelineBody");
+    body.innerHTML = "";
+
+    if (!json.data || json.data.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="5">Bugün için kayıt yok.</td>`;
+      body.appendChild(tr);
+      return;
+    }
+
+    json.data.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.fullName}</td>
+        <td>${p.role}</td>
+        <td>${formatTimeTR(p.firstScanAt)}</td>
+        <td>${p.hasExit ? formatTimeTR(p.lastScanAt) : "-"}</td>
+        <td>${p.scanCount || 1}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  // ------- LOGS PAGE -------
+  async function loadLogs() {
+    const res = await fetch(API + "/api/nfc-logs");
+    const json = await res.json();
+    const body = document.getElementById("logsBody");
+    body.innerHTML = "";
+
+    if (!json.data || json.data.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="5">Henüz okutma logu yok.</td>`;
+      body.appendChild(tr);
+      return;
+    }
+
+    json.data.forEach(log => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${log.id}</td>
+        <td>${log.fullName || "-"}</td>
+        <td>${log.role || "-"}</td>
+        <td>${log.cardUid}</td>
+        <td>${formatTimeTR(log.scannedAt)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  // ------- PEOPLE PAGE -------
+  async function loadPeople() {
+    const res = await fetch(API + "/api/persons");
+    const json = await res.json();
+    const body = document.getElementById("peopleBody");
+    body.innerHTML = "";
+
+    (json.data || []).forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.firstName} ${p.lastName}</td>
+        <td>${p.role}</td>
+        <td>${p.cardUid}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  // ---- Otomatik periyodik güncelleme (sol kolon) ----
+  setInterval(() => {
+    loadScans();
+  }, 4000);
+
+  // ---- İlk yükleme ----
+  (function init() {
+    loadJobs();
+    loadScans();
     loadTodayAssignments();
-  }
-}
-
-// ------- FIND PERSON -------
-async function findPersonByName(full) {
-  const res = await fetch(API + "/api/persons");
-  const json = await res.json();
-
-  return json.data.find(p => (p.firstName + " " + p.lastName) === full);
-}
-
-// ------- LOAD TODAY ASSIGNMENTS -------
-async function loadTodayAssignments() {
-  const res = await fetch(API + "/api/assignments/today");
-  const json = await res.json();
-
-  const body = document.getElementById("assignmentsBody");
-  body.innerHTML = "";
-
-  json.data.forEach(a => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${a.fullName}</td>
-      <td>${a.role}</td>
-      <td>${a.jobName}</td>
-      <td>${a.startTime.slice(11,16)}</td>
-      <td>${a.endTime.slice(11,16)}</td>
-    `;
-    body.appendChild(tr);
-  });
-}
-
-function today() {
-  return new Date().toISOString().slice(0,10);
-}
-
-setInterval(() => loadScans(), 4000);
-
-loadJobs();
-loadScans();
-loadTodayAssignments();
-
+  })();
 </script>
-
 </body>
 </html>
