@@ -1,699 +1,302 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Tevzi İş Atama</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 0; padding: 0; background: #f5f5f5;
-    }
-    .page { display: flex; height: 100vh; }
+<meta charset="UTF-8" />
+<title>Tevzi İş Atama</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f8f8f8;
+    display: flex;
+    height: 100vh;
+  }
 
-    .left {
-      width: 28%; border-right: 1px solid #ddd; background: #fff;
-      padding: 16px; box-sizing: border-box; overflow-y: auto;
-    }
-    .right {
-      width: 72%; padding: 16px; box-sizing: border-box; overflow-y: auto;
-      position: relative;
-    }
+  /* LEFT */
+  .left {
+    width: 28%;
+    background: #ffffff;
+    border-right: 1px solid #ddd;
+    padding: 16px;
+    overflow-y: auto;
+  }
 
-    h1, h2, h3 { margin-top: 0; }
+  .left h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 20px;
+  }
 
-    .person-list-item {
-      width: 100%; text-align: left; padding: 8px 10px; margin-bottom: 6px;
-      border-radius: 6px; border: 1px solid #ddd; background: #fafafa;
-      cursor: pointer; font-size: 14px;
-    }
-    .person-list-item.selected {
-      background: #0d6efd; color: #fff; border-color: #0d6efd;
-    }
+  .person-card {
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #f2f6ff;
+    border-radius: 8px;
+    border-left: 4px solid #4f73ff;
+  }
 
-    label { font-size: 13px; display: block; margin-bottom: 4px; }
-    select {
-      width: 100%; padding: 7px 8px; font-size: 14px;
-      border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;
-      background: #fff;
-    }
+  .time-box {
+    font-size: 14px;
+    color: #555;
+    margin-top: 4px;
+  }
 
-    .row { display: flex; gap: 12px; margin-bottom: 8px; }
-    .row > div { flex: 1; }
+  .exit-time {
+    color: #d13a3a;
+    font-weight: bold;
+  }
 
-    .btn-primary {
-      background: #0d6efd; color: #fff; border: none; padding: 8px 16px;
-      border-radius: 6px; font-size: 14px; cursor:pointer;
-    }
-    .btn-secondary {
-      background: #e9ecef; color: #333; border: 1px solid #ced4da;
-      padding: 8px 16px; border-radius: 6px; font-size: 14px; margin-left: 8px; cursor:pointer;
-    }
-    .btn-danger {
-      background: #dc3545; color: #fff; border: none; padding: 4px 10px;
-      border-radius: 6px; font-size: 12px; cursor:pointer;
-    }
+  /* RIGHT */
+  .right {
+    width: 72%;
+    padding: 20px;
+    overflow-y: auto;
+  }
 
-    .timeline-wrapper { margin-top: 12px; margin-bottom: 16px; }
-    .timeline-bar {
-      position: relative; width: 100%; height: 32px; background: #e9f3ff;
-      border-radius: 6px; border: 1px solid #cfe2ff; overflow: hidden;
-    }
-    .timeline-segment {
-      position: absolute; top: 0; bottom: 0; background: #0d6efd; opacity: 0.8;
-    }
-    .timeline-labels {
-      display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; color: #555;
-    }
+  h1 {
+    margin-top: 0;
+  }
 
-    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; }
-    thead { background: #f1f3f5; }
-    th, td { padding: 8px; border: 1px solid #dee2e6; text-align: left; }
-    tfoot { font-size: 12px; color: #666; }
-    th.actions-col, td.actions-col { text-align: center; width: 80px; }
+  select, button, input {
+    padding: 8px;
+    font-size: 14px;
+    margin: 4px 0;
+  }
 
-    #summaryText { font-size: 12px; color: #555; margin: 4px 0 10px 0; }
-    .muted { color:#666; font-size:12px; }
+  .row {
+    display: flex;
+    gap: 12px;
+  }
 
-    /* Sağ üst Ayarlar butonu */
-    #settingsBtn {
-      position: absolute; top: 10px; right: 10px;
-      background: #fff; border:1px solid #ddd; padding:6px 10px; border-radius:8px;
-      font-size: 13px; cursor:pointer;
-    }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+    font-size: 14px;
+  }
 
-    /* Sağdan açılan panel */
-    #settingsPanel {
-      position: fixed; top:0; right:0; height:100vh; width:320px;
-      background:#fff; border-left:1px solid #ddd; box-shadow:-4px 0 12px rgba(0,0,0,0.08);
-      padding:14px; box-sizing:border-box; display:none; z-index:9999;
-    }
-    #settingsPanel h3 { margin-top:0; display:flex; justify-content:space-between; align-items:center; }
-    #settingsPanel input {
-      width:100%; padding:8px 10px; border:1px solid #ccc; border-radius:6px; margin-bottom:8px;
-      font-size:14px;
-    }
-    #settingsPanel .panel-row { display:flex; gap:8px; }
-    #settingsPanel .panel-row button { flex:1; }
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
 
-    #jobsList {
-      margin-top:10px; font-size:13px; color:#333; max-height: 50vh; overflow:auto;
-      border-top:1px dashed #eee; padding-top:8px;
-    }
-    #jobsList div { padding:4px 0; }
+  th {
+    background: #f1f1f1;
+  }
 
-    /* Panel kapatma butonu */
-    #closePanelBtn {
-      border:none; background:transparent; font-size:20px; cursor:pointer; line-height:1;
-    }
+  .assign-btn {
+    background: #4f73ff;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
 
-    /* küçük status bar */
-    #statusBar {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 10px;
-      background: #111;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      display: none;
-      z-index: 10000;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-      max-width: 90vw;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    #statusBar.ok { background:#198754; }
-    #statusBar.err { background:#dc3545; }
-    #statusBar.warn { background:#fd7e14; }
-  </style>
+  .assign-btn:hover {
+    background: #3f63ee;
+  }
+
+</style>
 </head>
 <body>
 
-<div id="statusBar"></div>
+<!-- LEFT SIDE -->
+<div class="left">
+  <h2>Kart Okutan Personeller</h2>
+  <div id="scanList">Yükleniyor...</div>
+</div>
 
-<div class="page">
-  <div class="left">
-    <h2>Kart Okutan Personeller</h2>
-    <div id="personnelList">Yükleniyor...</div>
+<!-- RIGHT SIDE -->
+<div class="right">
+  <h1>Tevzi İş Atama</h1>
+
+  <div class="row">
+    <div style="flex: 1;">
+      <label>İş / Proje</label><br>
+      <select id="jobSelect"></select>
+    </div>
+
+    <div>
+      <label>İş Başlangıç Saati</label><br>
+      <select id="startTime">
+        <option>07:00</option>
+        <option>08:00</option>
+        <option>09:00</option>
+        <option>10:00</option>
+        <option>11:00</option>
+      </select>
+    </div>
+
+    <div>
+      <label>İş Bitiş Saati</label><br>
+      <select id="endTime">
+        <option>17:00</option>
+        <option>18:00</option>
+        <option>19:00</option>
+      </select>
+    </div>
   </div>
 
-  <div class="right">
-    <button id="settingsBtn">⚙ Ayarlar</button>
+  <button class="assign-btn" onclick="assignJob()">İş Ata</button>
+  <button class="assign-btn" style="background:#555" onclick="loadTodayAssignments()">Listeleri Yenile</button>
 
-    <h1>Tevzi İş Atama</h1>
-    <p id="selectedPersonInfo">Seçili personel yok.</p>
-
-    <div class="row">
-      <div>
-        <label for="jobSelect">İş / Proje</label>
-        <select id="jobSelect">
-          <option>Yükleniyor...</option>
-        </select>
-      </div>
-      <div>
-        <label for="startTimeSelect">İş Başlangıç Saati</label>
-        <select id="startTimeSelect"></select>
-      </div>
-      <div>
-        <label for="endTimeSelect">İş Bitiş Saati</label>
-        <select id="endTimeSelect"></select>
-      </div>
-    </div>
-
-    <div style="margin-bottom: 12px;">
-      <button class="btn-primary" id="assignBtn">İş Ata</button>
-      <button class="btn-secondary" id="refreshBtn">Listeleri Yenile</button>
-    </div>
-
-    <div class="timeline-wrapper">
-      <label>Seçili personelin günlük görünümü (07:00 - 19:00)</label>
-      <div class="timeline-bar" id="timelineBar"></div>
-      <div class="timeline-labels">
-        <span>07:00</span><span>08:00</span><span>09:00</span><span>10:00</span><span>11:00</span><span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span><span>17:00</span><span>18:00</span><span>19:00</span>
-      </div>
-    </div>
-
-    <h2>Bugünkü İş Atamaları</h2>
-    <p id="summaryText">Bugün için kayıtlı iş ataması yok.</p>
-
-    <table>
-      <thead>
+  <h2>Bugünkü İş Atamaları</h2>
+  <table>
+    <thead>
       <tr>
         <th>Personel</th>
         <th>Görev</th>
         <th>İş</th>
         <th>Başlangıç</th>
         <th>Bitiş</th>
-        <th class="actions-col">İşlem</th>
       </tr>
-      </thead>
-      <tbody id="assignmentsTableBody"></tbody>
-      <tfoot>
-      <tr>
-        <td colspan="6">Not: Kayıtlar sunucu tarafında saklanıyor, sayfayı yenileyince silinmez.</td>
-      </tr>
-      </tfoot>
-    </table>
-  </div>
-</div>
-
-<!-- ====== AYARLAR PANELİ ====== -->
-<div id="settingsPanel">
-  <h3>
-    Ayarlar
-    <button id="closePanelBtn" title="Kapat">×</button>
-  </h3>
-
-  <label>Yeni İş / Proje Ekle</label>
-  <input id="addJobInput" type="text" placeholder="Örn: 5 PORT TAŞ İŞLERİ" />
-  <div class="panel-row">
-    <button class="btn-primary" id="addJobBtn">Ekle</button>
-    <button class="btn-secondary" id="reloadJobsBtn">Yenile</button>
-  </div>
-
-  <div id="jobsList"></div>
+    </thead>
+    <tbody id="assignmentsBody"></tbody>
+  </table>
 </div>
 
 <script>
-  // ===== GLOBAL STATE =====
-  let todayPersonnel = [];
-  let selectedPerson = null;
-  let assignments = [];
-  let jobs = [];
-  let isAssigning = false;
 
-  function showStatus(msg, type="ok", ms=1600){
-    const bar = document.getElementById("statusBar");
-    bar.className = "";
-    bar.classList.add(type);
-    bar.textContent = msg;
-    bar.style.display = "block";
-    clearTimeout(bar.__t);
-    bar.__t = setTimeout(()=> bar.style.display="none", ms);
-  }
-
-  function getTodayStr() {
-    return new Date().toISOString().slice(0, 10);
-  }
-
-  function formatMinutesToText(totalMinutes) {
-    const hours = Math.floor(totalMinutes / 60);
-    const mins = Math.round(totalMinutes % 60);
-    if (totalMinutes <= 0) return '0 saat';
-    if (mins === 0) return `${hours} saat`;
-    if (hours === 0) return `${mins} dk`;
-    return `${hours} saat ${mins} dk`;
-  }
-
-  // ===== SELECT DOLDURMA (SAAT) =====
-  function initTimeSelects() {
-    const startSel = document.getElementById('startTimeSelect');
-    const endSel   = document.getElementById('endTimeSelect');
-    startSel.innerHTML = '';
-    endSel.innerHTML = '';
-
-    for (let h = 7; h <= 19; h++) {
-      const label = String(h).padStart(2, '0') + ':00';
-
-      const opt1 = document.createElement('option');
-      opt1.value = label;
-      opt1.textContent = label;
-      startSel.appendChild(opt1);
-
-      const opt2 = document.createElement('option');
-      opt2.value = label;
-      opt2.textContent = label;
-      endSel.appendChild(opt2);
-    }
-
-    startSel.value = '07:00';
-    endSel.value = '19:00';
-  }
-
-  // ===== İŞLERİ SUNUCUDAN ÇEK =====
-  async function loadJobs() {
-    const jobSelect = document.getElementById('jobSelect');
-
-    // seçimi koruyalım
-    const prevSelected = jobSelect.value;
-
-    jobSelect.innerHTML = '<option>Yükleniyor...</option>';
-
-    try {
-      const res = await fetch('/api/jobs');
-      const data = await res.json();
-      if (!data.ok) {
-        jobSelect.innerHTML = '<option>İş listesi alınamadı</option>';
-        showStatus("İş listesi alınamadı", "err");
-        return;
-      }
-
-      jobs = data.data || [];
-      jobSelect.innerHTML = '';
-
-      if (jobs.length === 0) {
-        jobSelect.innerHTML = '<option>İş listesi boş</option>';
-      } else {
-        jobs.forEach(job => {
-          const opt = document.createElement('option');
-          opt.value = job;
-          opt.textContent = job;
-          jobSelect.appendChild(opt);
-        });
-
-        // önceki seçim hala varsa geri seç
-        if (prevSelected && jobs.includes(prevSelected)) {
-          jobSelect.value = prevSelected;
-        }
-      }
-
-      renderJobsListInPanel();
-    } catch (e) {
-      console.error(e);
-      jobSelect.innerHTML = '<option>Sunucuya ulaşılamıyor</option>';
-      showStatus("Sunucuya ulaşılamıyor (jobs)", "err");
-    }
-  }
-
-  function renderJobsListInPanel() {
-    const list = document.getElementById('jobsList');
-    list.innerHTML = '<h4 style="margin:10px 0 6px 0;">Mevcut İşler</h4>';
-    if (jobs.length === 0) {
-      list.innerHTML += '<div class="muted">Kayıtlı iş yok.</div>';
-      return;
-    }
-    jobs.forEach(j => {
-      const d = document.createElement('div');
-      d.textContent = '• ' + j;
-      list.appendChild(d);
-    });
-  }
-
-  // ===== PERSONEL LİSTESİ =====
-  async function loadTodayPersonnel() {
-    const listDiv = document.getElementById('personnelList');
-    listDiv.textContent = 'Yükleniyor...';
-
-    try {
-      const res = await fetch('/api/today-scans');
-      const data = await res.json();
-      if (!data.ok) {
-        listDiv.textContent = 'Veri alınırken hata oluştu.';
-        showStatus("Kart okutanlar alınamadı", "err");
-        return;
-      }
-      todayPersonnel = data.data || [];
-      renderPersonnelList();
-    } catch (err) {
-      console.error(err);
-      listDiv.textContent = 'Sunucuya ulaşılamıyor.';
-      showStatus("Sunucuya ulaşılamıyor (scans)", "err");
-    }
-  }
-
-  function renderPersonnelList() {
-    const listDiv = document.getElementById('personnelList');
-    listDiv.innerHTML = '';
-
-    if (todayPersonnel.length === 0) {
-      listDiv.textContent = 'Bugün kart okutan personel yok.';
-      return;
-    }
-
-    todayPersonnel.forEach(p => {
-      const btn = document.createElement('button');
-      btn.className = 'person-list-item' +
-        (selectedPerson && selectedPerson.personId === p.personId ? ' selected' : '');
-      btn.textContent = `${p.fullName} (${p.role}) - Giriş: ${p.firstScanAt.slice(11,16)}`;
-      btn.addEventListener('click', () => {
-        selectedPerson = p;
-        document.getElementById('selectedPersonInfo').textContent =
-          `Seçili personel: ${p.fullName} (${p.role})`;
-        renderPersonnelList();
-        renderTimeline();
-        renderAssignmentsTable();
-      });
-      listDiv.appendChild(btn);
-    });
-  }
-
-  // ===== BUGÜNKÜ ATAMALARI SUNUCUDAN ÇEK =====
-  async function loadAssignmentsToday() {
-    try {
-      const res = await fetch('/api/assignments/today');
-      const data = await res.json();
-      if (!data.ok) {
-        assignments = [];
-        renderAssignmentsTable();
-        renderTimeline();
-        showStatus("Atamalar alınamadı", "err");
-        return;
-      }
-      assignments = data.data || [];
-      renderAssignmentsTable();
-      renderTimeline();
-    } catch (err) {
-      console.error('Atama yükleme hatası:', err);
-      assignments = [];
-      renderAssignmentsTable();
-      renderTimeline();
-      showStatus("Sunucuya ulaşılamıyor (assignments)", "err");
-    }
-  }
-
-  // ===== ATAMA TABLOSU + ÖZET =====
-  function renderAssignmentsTable() {
-    const tbody = document.getElementById('assignmentsTableBody');
-    const summaryEl = document.getElementById('summaryText');
-    tbody.innerHTML = '';
-
-    const today = getTodayStr();
-    const todaysAssignments = assignments.filter(a =>
-      typeof a.startTime === 'string' && a.startTime.slice(0,10) === today
-    );
-
-    if (todaysAssignments.length === 0) {
-      summaryEl.textContent = 'Bugün için kayıtlı iş ataması yok.';
-      return;
-    }
-
-    let totalMinutesAll = 0;
-    let totalMinutesSelectedPerson = 0;
-
-    todaysAssignments.forEach(a => {
-      const fullName = a.fullName || '';
-      const role = a.role || '';
-      const personId = a.personId;
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${fullName}</td>
-        <td>${role}</td>
-        <td>${a.jobName || ''}</td>
-        <td>${(a.startTime || '').slice(11,16)}</td>
-        <td>${(a.endTime || '').slice(11,16)}</td>
-        <td class="actions-col">
-          <button class="btn-danger delete-btn" data-id="${a.id}">Sil</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-
-      const start = new Date(a.startTime);
-      const end = new Date(a.endTime);
-      const diffMinutes = Math.max(0, (end - start) / 60000);
-      totalMinutesAll += diffMinutes;
-
-      if (selectedPerson && Number(personId) === Number(selectedPerson.personId)) {
-        totalMinutesSelectedPerson += diffMinutes;
-      }
-    });
-
-    let summaryText = `Bugün toplam ${todaysAssignments.length} atama var, toplam süre yaklaşık ${formatMinutesToText(totalMinutesAll)}.`;
-    if (selectedPerson) {
-      summaryText += ` Seçili personelin bugünkü toplam süresi: ${formatMinutesToText(totalMinutesSelectedPerson)}.`;
-    }
-    summaryEl.textContent = summaryText;
-  }
-
-  // ===== ZAMAN ÇİZELGESİ =====
-  function renderTimeline() {
-    const bar = document.getElementById('timelineBar');
-    bar.innerHTML = '';
-
-    if (!selectedPerson) return;
-
-    const today = getTodayStr();
-    const personAssignments = assignments.filter(
-      a =>
-        Number(a.personId) === Number(selectedPerson.personId) &&
-        typeof a.startTime === 'string' &&
-        a.startTime.slice(0,10) === today
-    );
-
-    const dayStart = 7;
-    const dayEnd = 19;
-    const totalHours = dayEnd - dayStart;
-
-    personAssignments.forEach(a => {
-      const startHour = parseInt(a.startTime.slice(11,13), 10);
-      const endHour   = parseInt(a.endTime.slice(11,13), 10);
-
-      const clampedStart = Math.max(dayStart, Math.min(dayEnd, startHour));
-      const clampedEnd   = Math.max(dayStart, Math.min(dayEnd, endHour));
-
-      const leftPct  = ((clampedStart - dayStart) / totalHours) * 100;
-      const widthPct = ((clampedEnd   - clampedStart) / totalHours) * 100;
-
-      const seg = document.createElement('div');
-      seg.className = 'timeline-segment';
-      seg.style.left = leftPct + '%';
-      seg.style.width = widthPct + '%';
-      seg.title = `${a.jobName || ''} (${a.startTime.slice(11,16)} - ${a.endTime.slice(11,16)})`;
-      bar.appendChild(seg);
-    });
-  }
-
-  // ===== İŞ ATAMA BUTONU =====
-  function setupAssignButton() {
-    const assignBtn = document.getElementById('assignBtn');
-
-    assignBtn.addEventListener('click', async () => {
-      if (isAssigning) return;
-
-      if (!selectedPerson) {
-        alert('Lütfen soldan bir personel seçin.');
-        return;
-      }
-
-      const today = getTodayStr();
-
-      // günlük tek atama ön kontrol
-      const alreadyAssigned = assignments.some(a =>
-        Number(a.personId) === Number(selectedPerson.personId) &&
-        typeof a.startTime === 'string' &&
-        a.startTime.startsWith(today)
-      );
-      if (alreadyAssigned) {
-        alert('Bu personele bugün zaten iş atanmış. Aynı güne ikinci atama yapılamaz.');
-        return;
-      }
-
-      const jobName = document.getElementById('jobSelect').value;
-      const startLabel = document.getElementById('startTimeSelect').value;
-      const endLabel = document.getElementById('endTimeSelect').value;
-
-      if (!jobName || !startLabel || !endLabel) {
-        alert('İş, başlangıç ve bitiş saatlerini seçmelisiniz.');
-        return;
-      }
-
-      const startHour = parseInt(startLabel.slice(0,2), 10);
-      const endHour = parseInt(endLabel.slice(0,2), 10);
-      if (endHour <= startHour) {
-        alert('İş bitiş saati, başlangıç saatinden sonra olmalı.');
-        return;
-      }
-
-      const startTime = `${today}T${startLabel}:00`;
-      const endTime   = `${today}T${endLabel}:00`;
-
-      try {
-        isAssigning = true;
-        assignBtn.disabled = true;
-        assignBtn.textContent = "Kaydediliyor...";
-
-        const res = await fetch('/api/assign', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            personId: selectedPerson.personId,
-            jobName,
-            startTime,
-            endTime
-          })
-        });
-
-        const data = await res.json();
-
-        if (!data.ok) {
-          alert('Hata: ' + (data.error || 'Atama yapılamadı.'));
-          showStatus("Atama yapılamadı", "err");
-          return;
-        }
-
-        showStatus("Atama kaydedildi", "ok");
-        await loadAssignmentsToday();
-
-      } catch (err) {
-        console.error('Atama isteği hatası:', err);
-        alert('Sunucuya ulaşılamadı. Atama kaydedilemedi.');
-        showStatus("Sunucuya ulaşılamadı (assign)", "err");
-      } finally {
-        isAssigning = false;
-        assignBtn.disabled = false;
-        assignBtn.textContent = "İş Ata";
-      }
-    });
-
-    document.getElementById('refreshBtn').addEventListener('click', () => {
-      loadTodayPersonnel();
-      loadAssignmentsToday();
-      loadJobs();
-      showStatus("Listeler yenilendi", "ok");
-    });
-  }
-
-  // ===== SİLME BUTONU =====
-  function setupDeleteHandler() {
-    const tbody = document.getElementById('assignmentsTableBody');
-
-    tbody.addEventListener('click', async (event) => {
-      const btn = event.target;
-      if (!btn.classList.contains('delete-btn')) return;
-
-      const id = btn.getAttribute('data-id');
-      if (!id) return;
-
-      const confirmDelete = confirm('Bu iş atamasını silmek istiyor musunuz?');
-      if (!confirmDelete) return;
-
-      try {
-        const res = await fetch('/api/assign/' + encodeURIComponent(id), {
-          method: 'DELETE'
-        });
-        const data = await res.json();
-
-        if (!data.ok) {
-          alert('Silme sırasında hata: ' + (data.error || 'Bilinmeyen hata'));
-          showStatus("Silinemedi", "err");
-          return;
-        }
-
-        showStatus("Atama silindi", "ok");
-        await loadAssignmentsToday();
-
-      } catch (err) {
-        console.error('Silme isteği hatası:', err);
-        alert('Sunucuya ulaşılamadı. Kayıt silinemedi.');
-        showStatus("Sunucuya ulaşılamadı (delete)", "err");
-      }
-    });
-  }
-
-  // ===== AYARLAR PANELİ =====
-  function setupSettings() {
-    const btn = document.getElementById('settingsBtn');
-    const panel = document.getElementById('settingsPanel');
-    const closeBtn = document.getElementById('closePanelBtn');
-
-    function openClosePanel(force){
-      const willOpen = (typeof force === "boolean") ? force : (panel.style.display !== 'block');
-      panel.style.display = willOpen ? 'block' : 'none';
-    }
-
-    btn.onclick = () => openClosePanel();
-    closeBtn.onclick = () => openClosePanel(false);
-
-    // dışarı tıklayınca kapa
-    document.addEventListener("click", (e)=>{
-      if(panel.style.display !== "block") return;
-      const isInside = panel.contains(e.target) || btn.contains(e.target);
-      if(!isInside) openClosePanel(false);
-    });
-
-    // ESC ile kapa
-    document.addEventListener("keydown", (e)=>{
-      if(e.key === "Escape" && panel.style.display === "block"){
-        openClosePanel(false);
-      }
-    });
-
-    document.getElementById('addJobBtn').onclick = async () => {
-      const inp = document.getElementById('addJobInput');
-      const val = inp.value.trim();
-      if (!val) {
-        alert('İş adı boş olamaz.');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/jobs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jobName: val })
-        });
-        const data = await res.json();
-        if (!data.ok) {
-          alert('İş eklenemedi: ' + (data.error || 'Bilinmeyen hata'));
-          showStatus("İş eklenemedi", "err");
-          return;
-        }
-        inp.value = '';
-        showStatus("İş eklendi", "ok");
-        await loadJobs();
-      } catch (e) {
-        alert('Sunucuya ulaşılamadı.');
-        showStatus("Sunucuya ulaşılamadı (job add)", "err");
-      }
-    };
-
-    document.getElementById('reloadJobsBtn').onclick = () => loadJobs();
-  }
-
-  // ===== SAYFA YÜKLENİNCE =====
-  document.addEventListener('DOMContentLoaded', () => {
-    initTimeSelects();
-    setupAssignButton();
-    setupDeleteHandler();
-    setupSettings();
-    loadJobs();
-    loadTodayPersonnel();
-    loadAssignmentsToday();
+// SUNUCU URL
+const API = "";
+
+// ------- JOB LIST LOAD -------
+async function loadJobs() {
+  const res = await fetch(API + "/api/jobs");
+  const json = await res.json();
+  const sel = document.getElementById("jobSelect");
+
+  sel.innerHTML = "";
+  json.data.forEach(job => {
+    const opt = document.createElement("option");
+    opt.value = job;
+    opt.textContent = job;
+    sel.appendChild(opt);
   });
+}
+
+// ------- LOAD TODAY SCANS (GİRİŞ - ÇIKIŞ) -------
+async function loadScans() {
+  const res = await fetch(API + "/api/today-scans");
+  const json = await res.json();
+
+  const div = document.getElementById("scanList");
+  div.innerHTML = "";
+
+  if (json.data.length === 0) {
+    div.innerHTML = "Bugün kart okutan personel yok.";
+    return;
+  }
+
+  json.data.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "person-card";
+
+    card.innerHTML = `
+      <strong>${p.fullName}</strong><br>
+      <span>${p.role}</span>
+      <div class="time-box">
+        ➤ Giriş: <strong>${p.firstScanAt.slice(11,16)}</strong>
+      </div>
+      <div class="time-box">
+        ➤ Çıkış: 
+        ${p.hasExit 
+          ? `<span class="exit-time">${p.lastScanAt.slice(11,16)}</span>` 
+          : `<span style="color:#777">(henüz çıkmadı)</span>`}
+      </div>
+    `;
+
+    div.appendChild(card);
+  });
+}
+
+// ------- ASSIGN JOB -------
+async function assignJob() {
+  const jobName = document.getElementById("jobSelect").value;
+  const startTime = `${today()}T${document.getElementById("startTime").value}:00`;
+  const endTime = `${today()}T${document.getElementById("endTime").value}:00`;
+
+  // Soldaki ilk adamı otomatik seçiyoruz
+  const scanCards = document.querySelectorAll(".person-card");
+  if (scanCards.length === 0) {
+    alert("Bugün kart okutan kimse yok.");
+    return;
+  }
+
+  const firstName = scanCards[0].querySelector("strong").innerText;
+  const person = await findPersonByName(firstName);
+
+  if (!person) {
+    alert("Personel bulunamadı!");
+    return;
+  }
+
+  const res = await fetch(API + "/api/assign", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({
+      personId: person.id,
+      jobName,
+      startTime,
+      endTime
+    })
+  });
+
+  const json = await res.json();
+  if (!json.ok) {
+    alert(json.error);
+  } else {
+    alert("İş ataması yapıldı!");
+    loadTodayAssignments();
+  }
+}
+
+// ------- FIND PERSON -------
+async function findPersonByName(full) {
+  const res = await fetch(API + "/api/persons");
+  const json = await res.json();
+
+  return json.data.find(p => (p.firstName + " " + p.lastName) === full);
+}
+
+// ------- LOAD TODAY ASSIGNMENTS -------
+async function loadTodayAssignments() {
+  const res = await fetch(API + "/api/assignments/today");
+  const json = await res.json();
+
+  const body = document.getElementById("assignmentsBody");
+  body.innerHTML = "";
+
+  json.data.forEach(a => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${a.fullName}</td>
+      <td>${a.role}</td>
+      <td>${a.jobName}</td>
+      <td>${a.startTime.slice(11,16)}</td>
+      <td>${a.endTime.slice(11,16)}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+// TODAY FORMAT
+function today() {
+  return new Date().toISOString().slice(0,10);
+}
+
+// AUTO REFRESH
+setInterval(() => loadScans(), 4000);
+
+// INITIAL LOAD
+loadJobs();
+loadScans();
+loadTodayAssignments();
+
 </script>
+
 </body>
 </html>

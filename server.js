@@ -72,7 +72,7 @@ app.post('/api/jobs', (req, res) => {
   res.json({ ok: true, data: jobs });
 });
 
-// NFC scan
+// NFC scan (giriş & çıkış için tüm logları tutuyoruz)
 app.post('/api/nfc-scan', (req, res) => {
   const { cardUid, scannedAt } = req.body;
 
@@ -95,25 +95,46 @@ app.post('/api/nfc-scan', (req, res) => {
   res.json({ ok: true, person, scan });
 });
 
-// Today scans
+// Today scans (giriş & çıkış saatleri)
 app.get('/api/today-scans', (req, res) => {
   const t = todayStr();
+
+  // Bugünkü tüm okutmalar
   const today = nfcScans.filter(s => s.scannedAt.startsWith(t));
 
+  // Kişi kişi gruplama
   const map = {};
   today.forEach(s => {
-    if (!map[s.personId]) map[s.personId] = s;
+    if (!map[s.personId]) {
+      map[s.personId] = {
+        firstScanAt: s.scannedAt,
+        lastScanAt: s.scannedAt,
+        scanCount: 1
+      };
+    } else {
+      if (s.scannedAt < map[s.personId].firstScanAt) {
+        map[s.personId].firstScanAt = s.scannedAt;
+      }
+      if (s.scannedAt > map[s.personId].lastScanAt) {
+        map[s.personId].lastScanAt = s.scannedAt;
+      }
+      map[s.personId].scanCount++;
+    }
   });
 
-  const out = Object.values(map).map(s => {
-    const p = persons.find(x => x.id === s.personId);
+  const out = Object.entries(map).map(([personId, info]) => {
+    const p = persons.find(x => x.id === Number(personId));
+    if (!p) return null;
+
     return {
       personId: p.id,
-      fullName: p.firstName + " " + p.lastName,
+      fullName: `${p.firstName} ${p.lastName}`,
       role: p.role,
-      firstScanAt: s.scannedAt
+      firstScanAt: info.firstScanAt, // giriş
+      lastScanAt: info.lastScanAt,   // çıkış
+      hasExit: info.scanCount > 1
     };
-  });
+  }).filter(Boolean);
 
   res.json({ ok: true, data: out });
 });
