@@ -1,0 +1,30 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Person {
+  id        Int      @id @default(autoincrement())
+  name      String
+  tc        String?
+  nfcId     String?  @unique
+  duty      String?
+  shift     String?
+  createdAt DateTime @default(now())
+
+  logs      ShiftLog[]
+}
+
+model ShiftLog {
+  id        Int      @id @default(autoincrement())
+  personId  Int
+  type      String
+  shift     String
+  timestamp DateTime @default(now())
+
+  person    Person   @relation(fields: [personId], references: [id])
+}
