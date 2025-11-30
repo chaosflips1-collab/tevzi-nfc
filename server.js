@@ -7,16 +7,19 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// ------------------ MIDDLEWARES ------------------
 app.use(cors());
-app.use(express.json());
 
-// Root route
+// Android body parsing sorunlarını tamamen çözmek için:
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// ------------------ ROOT ROUTE ------------------
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'tevzi.html'));
 });
 
-// Demo persons
+// ------------------ DEMO PERSONS ------------------
 const persons = [
   { id: 1, firstName: 'Ahmet Seyfi', lastName: 'Yüksel', role: 'Depocu', cardUid: 'CARD_AHMET' },
   { id: 2, firstName: 'Zeki Okan', lastName: 'Kaya', role: 'Boru Ustası', cardUid: 'CARD_ZEKI' }
@@ -24,7 +27,7 @@ const persons = [
 
 const nfcScans = [];
 
-// DATA FILES
+// ------------------ FILE SYSTEM ------------------
 const DATA_DIR = path.join(__dirname, 'data');
 const ASSIGN_FILE = path.join(DATA_DIR, 'assignments.json');
 const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
@@ -32,12 +35,15 @@ const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
 if (!fs.existsSync(ASSIGN_FILE)) fs.writeFileSync(ASSIGN_FILE, '[]');
-if (!fs.existsSync(JOBS_FILE)) fs.writeFileSync(JOBS_FILE, JSON.stringify([
-  "Çelik Montaj 3. Kat",
-  "Makine Bakım - Hat 2",
-  "Muhtelif Boru Donatım İşleri",
-  "Depo Düzenleme"
-], null, 2));
+
+if (!fs.existsSync(JOBS_FILE)) {
+  fs.writeFileSync(JOBS_FILE, JSON.stringify([
+    "Çelik Montaj 3. Kat",
+    "Makine Bakım - Hat 2",
+    "Muhtelif Boru Donatım İşleri",
+    "Depo Düzenleme"
+  ], null, 2));
+}
 
 const readAssignments = () => JSON.parse(fs.readFileSync(ASSIGN_FILE));
 const writeAssignments = (v) => fs.writeFileSync(ASSIGN_FILE, JSON.stringify(v, null, 2));
@@ -49,14 +55,14 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// ---------------- API'LER --------------------
+// ------------------ API'LER ------------------
 
-// Test endpoint
+// TEST ENDPOINT
 app.get('/api/hello', (req, res) => {
   res.json({ ok: true, msg: "Tevzi NFC server çalışıyor." });
 });
 
-// JOBS
+// JOBS LIST
 app.get('/api/jobs', (req, res) => {
   res.json({ ok: true, data: readJobs() });
 });
@@ -72,8 +78,10 @@ app.post('/api/jobs', (req, res) => {
   res.json({ ok: true, data: jobs });
 });
 
-// NFC scan (giriş & çıkış için tüm logları tutuyoruz)
+// ------------------ NFC SCAN ------------------
 app.post('/api/nfc-scan', (req, res) => {
+  console.log("Gelen NFC body:", req.body);
+
   const { cardUid, scannedAt } = req.body;
 
   if (!cardUid || !scannedAt)
@@ -95,14 +103,12 @@ app.post('/api/nfc-scan', (req, res) => {
   res.json({ ok: true, person, scan });
 });
 
-// Today scans (giriş & çıkış saatleri)
+// ------------------ TODAY SCANS ------------------
 app.get('/api/today-scans', (req, res) => {
   const t = todayStr();
 
-  // Bugünkü tüm okutmalar
   const today = nfcScans.filter(s => s.scannedAt.startsWith(t));
 
-  // Kişi kişi gruplama
   const map = {};
   today.forEach(s => {
     if (!map[s.personId]) {
@@ -130,8 +136,8 @@ app.get('/api/today-scans', (req, res) => {
       personId: p.id,
       fullName: `${p.firstName} ${p.lastName}`,
       role: p.role,
-      firstScanAt: info.firstScanAt, // giriş
-      lastScanAt: info.lastScanAt,   // çıkış
+      firstScanAt: info.firstScanAt,
+      lastScanAt: info.lastScanAt,
       hasExit: info.scanCount > 1
     };
   }).filter(Boolean);
@@ -139,12 +145,12 @@ app.get('/api/today-scans', (req, res) => {
   res.json({ ok: true, data: out });
 });
 
-// Persons
+// PERSON LIST
 app.get('/api/persons', (req, res) => {
   res.json({ ok: true, data: persons });
 });
 
-// Assign
+// ------------------ ASSIGN JOB ------------------
 app.post('/api/assign', (req, res) => {
   let { personId, jobName, startTime, endTime } = req.body;
   personId = Number(personId);
@@ -185,7 +191,7 @@ app.post('/api/assign', (req, res) => {
   res.json({ ok: true, assignment: newObj });
 });
 
-// Today's assignments
+// TODAY ASSIGNMENTS
 app.get('/api/assignments/today', (req, res) => {
   const today = todayStr();
   const assigns = readAssignments()
@@ -194,7 +200,7 @@ app.get('/api/assignments/today', (req, res) => {
   res.json({ ok: true, data: assigns });
 });
 
-// Full report
+// FULL REPORT
 app.get('/api/assignments', (req, res) => {
   const date = (req.query.date || todayStr()).slice(0, 10);
   const assigns = readAssignments()
@@ -203,10 +209,10 @@ app.get('/api/assignments', (req, res) => {
   res.json({ ok: true, data: assigns });
 });
 
-// Static
+// ------------------ STATIC FILES ------------------
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Start
+// ------------------ START SERVER ------------------
 app.listen(PORT, () => {
   console.log("Server çalışıyor → PORT:", PORT);
 });
